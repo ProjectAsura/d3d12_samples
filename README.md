@@ -1,2 +1,16 @@
 # d3d12_samples
-Direct3D 12 Sample Programs
+
+Direct3D 12 を用いたサンプルプログラムです。  
+
+## サンプル一覧
+
+### d3d12_window
+ウィンドウを生成して，画面クリアする最も単純なサンプルプログラムです。  
+解説記事は XXX を参照してください。  
+![d3d12_window](d3d12_window/d3d12_window.png)
+
+### d3d12_polygon
+頂点シェーダとピクセルシェーダを使って1枚のポリゴンを描画するサンプルプログラムです。  
+解説記事は XXX を参照してください。  
+![d3d12_polygon](d3d12_polygon/d3d12_polygon.png)
+

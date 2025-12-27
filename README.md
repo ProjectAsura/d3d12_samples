@@ -19,3 +19,8 @@ Direct3D 12 を用いたサンプルプログラムです。
 このサンプルプログラムではGPU Upload Heapsを対応しています。  
 解説記事は XXX を参照してください。
 ![d3d12_texture](d3d12_texture/d3d12_texture.png)  
+
+### d3d12_imgui
+ImGuiを使用するサンプルプログラムです。  
+解説記事は XXX を参照してください。  
+![d3d12_imgui](d3d12_imgui/d3d12_imgui.png)  

@@ -14,3 +14,8 @@ Direct3D 12 を用いたサンプルプログラムです。
 解説記事は XXX を参照してください。  
 ![d3d12_polygon](d3d12_polygon/d3d12_polygon.png)
 
+### d3d12_texture
+1枚のテクスチャをテクスチャマッピングするサンプルプログラムです。  
+このサンプルプログラムではGPU Upload Heapsを対応しています。  
+解説記事は XXX を参照してください。
+![d3d12_texture](d3d12_texture/d3d12_texture.png)  

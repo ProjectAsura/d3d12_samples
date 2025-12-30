@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../../../D3D12_PhotometricLight/Framework/project/Framework.vcxproj" Id="7073c1cb-48dd-404c-bacb-eb3bc3567788" />
+  <Project Path="Sample.vcxproj" Id="28843877-37b7-4167-8a9c-5e3328ce4319" />
+</Solution>

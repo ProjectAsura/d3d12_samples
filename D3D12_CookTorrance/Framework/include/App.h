@@ -11,7 +11,7 @@
 #include <Windows.h>
 #include <cstdint>
 #include <d3d12.h>
-#include <dxgi1_4.h>
+#include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <ComPtr.h>
 #include <DescriptorPool.h>

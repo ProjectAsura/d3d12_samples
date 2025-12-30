@@ -63,6 +63,9 @@
       <HeaderFileOutput>$(ProjectDir)..\res\Compiled\%(Filename).inc</HeaderFileOutput>
       <ShaderModel>6.0</ShaderModel>
     </FxCompile>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -86,6 +89,9 @@
       <HeaderFileOutput>$(ProjectDir)..\res\Compiled\%(Filename).inc</HeaderFileOutput>
       <ShaderModel>6.0</ShaderModel>
     </FxCompile>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\App.cpp" />

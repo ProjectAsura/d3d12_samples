@@ -84,8 +84,8 @@ protected:
     DXGI_FORMAT     m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;   
     D3D12_VIEWPORT  m_Viewport          = {};
     D3D12_RECT      m_ScissorRect       = {};
-    uint32_t        m_Width             = 1920;
-    uint32_t        m_Height            = 1080;
+    uint32_t        m_Width             = 960;
+    uint32_t        m_Height            = 540;
 
     RefPtr<ID3D12Device>                m_Device;
     RefPtr<IDXGISwapChain4>             m_SwapChain;

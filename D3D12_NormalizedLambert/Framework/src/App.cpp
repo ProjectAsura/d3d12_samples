@@ -184,9 +184,57 @@ bool App::InitD3D()
     }
     #endif
 
+    ComPtr<IDXGIFactory6> pFactory;
+    {
+        uint32_t flags = 0;
+    #if defined(DEBUG) || defined(_DEBUG)
+        flags |= DXGI_CREATE_FACTORY_DEBUG;
+    #endif
+
+        ComPtr<IDXGIFactory2> factory;
+
+        auto hr = CreateDXGIFactory2(flags, IID_PPV_ARGS(factory.GetAddressOf()));
+        if (FAILED(hr))
+        {
+            OutputDebugStringA("Error : CreateDXGIFactory2() Failed.");
+            return false;
+        }
+
+        hr = factory.As(&pFactory);
+        if (FAILED(hr))
+        {
+            OutputDebugStringA("Error : ComPtr::As() Failed.");
+            return false;
+        }
+    }
+
+    // DXGIアダプター生成.
+    ComPtr<IDXGIAdapter1> pAdapter;
+    {
+        // 高パフォーマンスのものを選択.
+        for(auto adapterId=0;
+            DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapterByGpuPreference(adapterId, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(pAdapter.ReleaseAndGetAddressOf()));
+            adapterId++)
+        {
+            DXGI_ADAPTER_DESC1 desc;
+            auto hr = pAdapter->GetDesc1(&desc);
+            if (FAILED(hr))
+            { continue; }
+
+            // ソフトウェアは回避する.
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+            { continue; }
+
+            // 最初に見つかったものをD3D12デバイス生成として利用する.
+            hr = D3D12CreateDevice(pAdapter.Get(), D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr);
+            if (SUCCEEDED(hr))
+            { break; }
+        }
+    }
+
     // デバイスの生成.
     auto hr = D3D12CreateDevice(
-        nullptr,
+        pAdapter.Get(),
         D3D_FEATURE_LEVEL_11_0,
         IID_PPV_ARGS(m_pDevice.GetAddressOf()));
     if (FAILED(hr))

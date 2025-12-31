@@ -1429,6 +1429,7 @@ void App::OnFrameMove()
         {
             ImGui::Text((char*)u8"ImGuiのテストです");
             ImGui::DragFloat((char*)u8"回転速度", &m_RotationSpeed, 0.001f);
+            ImGui::ColorPicker3((char*)u8"クリアカラー", m_ClearColor);
             ImGui::End();
         }
     }
@@ -1464,8 +1465,7 @@ void App::OnFrameRender()
     m_CommandList->OMSetRenderTargets(1, &m_HandleRTV[idx], FALSE, &m_HandleDSV);
 
     // カラーバッファをクリア.
-    float clearColor[] = { 0.39f, 0.58f, 0.92f, 1.0f };
-    m_CommandList->ClearRenderTargetView(m_HandleRTV[idx], clearColor, 0, nullptr );
+    m_CommandList->ClearRenderTargetView(m_HandleRTV[idx], m_ClearColor, 0, nullptr );
     m_CommandList->ClearDepthStencilView(m_HandleDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     {

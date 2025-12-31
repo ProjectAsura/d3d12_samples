@@ -282,8 +282,8 @@ void MeshLoader::ParseMesh(ResMesh& dstMesh, const aiMesh* pSrcMesh)
             kMaxVertices,
             kMaxPrimitives);
 
-        std::vector<meshopt_Meshlet> meshlets(maxMeshlets);
-        std::vector<uint32_t> meshletVertices(maxMeshlets * kMaxVertices);
+        std::vector<meshopt_Meshlet> meshlets (maxMeshlets);
+        std::vector<uint32_t> meshletVertices (maxMeshlets * kMaxVertices);
         std::vector<uint8_t>  meshletTriangles(maxMeshlets * kMaxPrimitives * 3);
 
         auto meshletCount = meshopt_buildMeshlets(
@@ -309,13 +309,13 @@ void MeshLoader::ParseMesh(ResMesh& dstMesh, const aiMesh* pSrcMesh)
             auto primitiveOffset = uint32_t(dstMesh.PrimitiveIndices   .size());
 
             for(auto i=0u; i<meshlet.vertex_count; ++i)
-            { dstMesh.UniqueVertexIndices.push_back(meshletVertices[i]); }
+            { dstMesh.UniqueVertexIndices.push_back(meshletVertices[i + meshlet.vertex_offset]); }
 
             for(auto i=0u; i<meshlet.triangle_count * 3; i+=3)
             {
                 ResPrimitiveIndex tris = {};
-                tris.index1 = meshletTriangles[i + 0 + meshlet.triangle_offset];
-                tris.index0 = meshletTriangles[i + 1 + meshlet.triangle_offset];
+                tris.index0 = meshletTriangles[i + 0 + meshlet.triangle_offset];
+                tris.index1 = meshletTriangles[i + 1 + meshlet.triangle_offset];
                 tris.index2 = meshletTriangles[i + 2 + meshlet.triangle_offset];
                 dstMesh.PrimitiveIndices.push_back(tris);
             }

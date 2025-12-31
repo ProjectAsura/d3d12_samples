@@ -114,8 +114,9 @@ protected:
     RefPtr<ID3D12RootSignature>         m_RootSignature;
     RefPtr<ID3D12PipelineState>         m_PipelineState;
     RefPtr<ID3D12Resource>              m_Texture;
-    float                               m_RotateAngle = 0.0f;
+    float                               m_RotateAngle   = 0.0f;
     float                               m_RotationSpeed = 0.05f;
+    float                               m_ClearColor[4] = { 0.39f, 0.58f, 0.92f, 1.0f };
 
     //========================================================================
     // protected methods.

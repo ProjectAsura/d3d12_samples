@@ -1,0 +1,23 @@
+シェーダ記述ルール.
+以下のルールにより，定数バッファとルート定数を識別し，シェーダリフレクションからRootSignatureを自動生成する。
+
+CbXXX → ConstantBufferとみなす.
+ ex) cbuffer CbParam : register(b1)
+
+ConstantsXX → RootConstants とみなす.
+ ex) cbuffer Constants0 : register(b0);
+
+
+次の名前でサンプラーが定義された場合は，スタティックサンプラーとして自動設定する.
+SamplerState PointClamp;
+SamplerState PointWrap;
+SamplerState PointMirror;
+SamplerState LinearClamp;
+SamplerState LinearWrap;
+SamplerState LinearMirror;
+SamplerState AnisotropicClamp;
+SamplerState AnisotropicWrap;
+SamplerState AnisotropicMirror;
+SamplerComparisonState ShadowSampler;
+SamplerComparisonState ReverseShadowSampler;
+

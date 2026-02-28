@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="../../external/asdx12/project/asdx12.vcxproj" Id="ecd906d6-5deb-4b5b-b919-05c147194c1d">
+    <BuildType Solution="Debug|x64" Project="DebugMT" />
+    <BuildType Solution="Debug|x86" Project="DebugMD" />
+    <BuildType Solution="Release|*" Project="ReleaseMT" />
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="MeshletCulling.vcxproj" Id="de3653d5-d1e0-4153-a404-0fcb2f840cdc" />
+</Solution>

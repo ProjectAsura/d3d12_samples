@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.props" Condition="Exists('..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="DebugMD|x64">
+      <Configuration>DebugMD</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugMT|x64">
+      <Configuration>DebugMT</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseMD|x64">
+      <Configuration>ReleaseMD</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseMT|x64">
+      <Configuration>ReleaseMT</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{ECD906D6-5DEB-4B5B-B919-05C147194C1D}</ProjectGuid>
+    <RootNamespace>asdx12</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;ASDX_AUTO_LINK;ASDX_ENABLE_DXC;ASDX_ENABLE_IMGUI;ASDX_ENABLE_TINYXML2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\imgui;$(ProjectDir)..\external\tinyxml2;$(ProjectDir)..\external\meshoptimizer;$(ProjectDir)..\external\flatbuffers-2.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\external\dxc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent />
+    <FxCompile>
+      <ShaderModel>6.0</ShaderModel>
+      <VariableName>%(Filename)</VariableName>
+      <HeaderFileOutput>$(ProjectDir)..\res\shaders\Compiled\%(Filename).inc</HeaderFileOutput>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\res\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
+    <PreBuildEvent />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;ASDX_AUTO_LINK;ASDX_ENABLE_DXC;ASDX_ENABLE_IMGUI;ASDX_ENABLE_TINYXML2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\imgui;$(ProjectDir)..\external\tinyxml2;$(ProjectDir)..\external\meshoptimizer;$(ProjectDir)..\external\flatbuffers-2.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\external\dxc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent />
+    <FxCompile>
+      <ShaderModel>6.0</ShaderModel>
+      <VariableName>%(Filename)</VariableName>
+      <HeaderFileOutput>$(ProjectDir)..\res\shaders\Compiled\%(Filename).inc</HeaderFileOutput>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\res\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
+    <PreBuildEvent />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;ASDX_AUTO_LINK;ASDX_ENABLE_DXC;ASDX_ENABLE_IMGUI;ASDX_ENABLE_TINYXML2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\imgui;$(ProjectDir)..\external\tinyxml2;$(ProjectDir)..\external\meshoptimizer;$(ProjectDir)..\external\flatbuffers-2.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\external\dxc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent />
+    <FxCompile>
+      <ShaderModel>6.0</ShaderModel>
+      <VariableName>%(Filename)</VariableName>
+      <HeaderFileOutput>$(ProjectDir)..\res\shaders\Compiled\%(Filename).inc</HeaderFileOutput>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\res\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;ASDX_AUTO_LINK;ASDX_ENABLE_DXC;ASDX_ENABLE_IMGUI;ASDX_ENABLE_TINYXML2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\imgui;$(ProjectDir)..\external\tinyxml2;$(ProjectDir)..\external\meshoptimizer;$(ProjectDir)..\external\flatbuffers-2.0.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\external\dxc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent />
+    <FxCompile>
+      <ShaderModel>6.0</ShaderModel>
+      <VariableName>%(Filename)</VariableName>
+      <HeaderFileOutput>$(ProjectDir)..\res\shaders\Compiled\%(Filename).inc</HeaderFileOutput>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\res\shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\external\imgui\imgui.cpp" />
+    <ClCompile Include="..\external\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\external\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\external\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\allocator.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\clusterizer.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\indexanalyzer.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\indexcodec.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\indexgenerator.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\overdrawoptimizer.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\partition.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\quantization.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\rasterizer.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\simplifier.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\spatialorder.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\stripifier.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\vcacheoptimizer.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\vertexcodec.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\vertexfilter.cpp" />
+    <ClCompile Include="..\external\meshoptimizer\vfetchoptimizer.cpp" />
+    <ClCompile Include="..\external\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="..\src\edit\asdxEditParam.cpp" />
+    <ClCompile Include="..\src\edit\asdxFileWatcher.cpp" />
+    <ClCompile Include="..\src\edit\asdxGuiMgr.cpp" />
+    <ClCompile Include="..\src\edit\asdxHistory.cpp" />
+    <ClCompile Include="..\src\edit\asdxP4VHelper.cpp" />
+    <ClCompile Include="..\src\edit\asdxTcpConnector.cpp" />
+    <ClCompile Include="..\src\fnd\asdxBit.cpp" />
+    <ClCompile Include="..\src\fnd\asdxFrameHeap.cpp" />
+    <ClCompile Include="..\src\fnd\asdxGamePad.cpp" />
+    <ClCompile Include="..\src\fnd\asdxIndexHeap.cpp" />
+    <ClCompile Include="..\src\fnd\asdxJobSystem.cpp" />
+    <ClCompile Include="..\src\fnd\asdxKeyboard.cpp" />
+    <ClCompile Include="..\src\fnd\asdxLogger.cpp" />
+    <ClCompile Include="..\src\fnd\asdxMessage.cpp" />
+    <ClCompile Include="..\src\fnd\asdxMisc.cpp" />
+    <ClCompile Include="..\src\fnd\asdxMouse.cpp" />
+    <ClCompile Include="..\src\fnd\asdxOffsetAllocator.cpp" />
+    <ClCompile Include="..\src\fnd\asdxRandom.cpp" />
+    <ClCompile Include="..\src\fnd\asdxTablet.cpp" />
+    <ClCompile Include="..\src\fnd\asdxThreadPool.cpp" />
+    <ClCompile Include="..\src\fnd\asdxTokenizer.cpp" />
+    <ClCompile Include="..\src\fw\asdxApp.cpp" />
+    <ClCompile Include="..\src\fw\asdxAppCamera.cpp" />
+    <ClCompile Include="..\src\fw\asdxEntity.cpp" />
+    <ClCompile Include="..\src\gfx\asdxBuffer.cpp" />
+    <ClCompile Include="..\src\gfx\asdxCamera.cpp" />
+    <ClCompile Include="..\src\gfx\asdxCommandList.cpp" />
+    <ClCompile Include="..\src\gfx\asdxCommandQueue.cpp" />
+    <ClCompile Include="..\src\gfx\asdxDevice.cpp" />
+    <ClCompile Include="..\src\gfx\asdxPipelineState.cpp" />
+    <ClCompile Include="..\src\gfx\asdxRayTracing.cpp" />
+    <ClCompile Include="..\src\gfx\asdxScreenCapture.cpp" />
+    <ClCompile Include="..\src\gfx\asdxShaderCompiler.cpp" />
+    <ClCompile Include="..\src\gfx\asdxShape.cpp" />
+    <ClCompile Include="..\src\gfx\asdxTarget.cpp" />
+    <ClCompile Include="..\src\gfx\asdxTexture.cpp" />
+    <ClCompile Include="..\src\res\asdxResModel.cpp" />
+    <ClCompile Include="..\src\res\asdxResTexture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\external\imgui\imconfig.h" />
+    <ClInclude Include="..\external\imgui\imgui.h" />
+    <ClInclude Include="..\external\imgui\imgui_internal.h" />
+    <ClInclude Include="..\external\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\external\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\external\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\external\meshoptimizer\meshoptimizer.h" />
+    <ClInclude Include="..\external\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="..\include\edit\asdxEditParam.h" />
+    <ClInclude Include="..\include\edit\asdxFileWatcher.h" />
+    <ClInclude Include="..\include\edit\asdxGuiMgr.h" />
+    <ClInclude Include="..\include\edit\asdxHistory.h" />
+    <ClInclude Include="..\include\edit\asdxP4VHelper.h" />
+    <ClInclude Include="..\include\edit\asdxTcpConnector.h" />
+    <ClInclude Include="..\include\fnd\asdxBit.h" />
+    <ClInclude Include="..\include\fnd\asdxChunkAllocator.h" />
+    <ClInclude Include="..\include\fnd\asdxFrameHeap.h" />
+    <ClInclude Include="..\include\fnd\asdxFunction.h" />
+    <ClInclude Include="..\include\fnd\asdxHash.h" />
+    <ClInclude Include="..\include\fnd\asdxHid.h" />
+    <ClInclude Include="..\include\fnd\asdxIndexHeap.h" />
+    <ClInclude Include="..\include\fnd\asdxJobSystem.h" />
+    <ClInclude Include="..\include\fnd\asdxList.h" />
+    <ClInclude Include="..\include\fnd\asdxLogger.h" />
+    <ClInclude Include="..\include\fnd\asdxMacro.h" />
+    <ClInclude Include="..\include\fnd\asdxMath.h" />
+    <ClInclude Include="..\include\fnd\asdxMessage.h" />
+    <ClInclude Include="..\include\fnd\asdxMisc.h" />
+    <ClInclude Include="..\include\fnd\asdxOctree.h" />
+    <ClInclude Include="..\include\fnd\asdxOffsetAllocator.h" />
+    <ClInclude Include="..\include\fnd\asdxPool.h" />
+    <ClInclude Include="..\include\fnd\asdxQueue.h" />
+    <ClInclude Include="..\include\fnd\asdxRef.h" />
+    <ClInclude Include="..\include\fnd\asdxRelativePtr.h" />
+    <ClInclude Include="..\include\fnd\asdxSpinLock.h" />
+    <ClInclude Include="..\include\fnd\asdxStack.h" />
+    <ClInclude Include="..\include\fnd\asdxStepTimer.h" />
+    <ClInclude Include="..\include\fnd\asdxStopWatch.h" />
+    <ClInclude Include="..\include\fnd\asdxStringView.h" />
+    <ClInclude Include="..\include\fnd\asdxTablet.h" />
+    <ClInclude Include="..\include\fnd\asdxThreadPool.h" />
+    <ClInclude Include="..\include\fnd\asdxTokenizer.h" />
+    <ClInclude Include="..\include\fw\asdxApp.h" />
+    <ClInclude Include="..\include\fw\asdxAppCamera.h" />
+    <ClInclude Include="..\include\fw\asdxEntity.h" />
+    <ClInclude Include="..\include\gfx\asdxBuffer.h" />
+    <ClInclude Include="..\include\gfx\asdxCamera.h" />
+    <ClInclude Include="..\include\gfx\asdxCommandList.h" />
+    <ClInclude Include="..\include\gfx\asdxCommandQueue.h" />
+    <ClInclude Include="..\include\gfx\asdxDevice.h" />
+    <ClInclude Include="..\include\gfx\asdxDisposer.h" />
+    <ClInclude Include="..\include\gfx\asdxPipelineState.h" />
+    <ClInclude Include="..\include\gfx\asdxShape.h" />
+    <ClInclude Include="..\include\gfx\asdxRayTracing.h" />
+    <ClInclude Include="..\include\gfx\asdxScreenCpature.h" />
+    <ClInclude Include="..\include\gfx\asdxShaderCompiler.h" />
+    <ClInclude Include="..\include\gfx\asdxTarget.h" />
+    <ClInclude Include="..\include\gfx\asdxTexture.h" />
+    <ClInclude Include="..\include\gfx\asdxView.h" />
+    <ClInclude Include="..\include\res\asdxResModel.h" />
+    <ClInclude Include="..\include\res\asdxResTexture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\fnd\asdxMath.inl" />
+    <None Include="..\res\shaders\BRDF.hlsli" />
+    <None Include="..\res\shaders\Math.hlsli" />
+    <None Include="..\res\shaders\RayQuery.hlsli" />
+    <None Include="..\res\shaders\Samplers.hlsli" />
+    <None Include="..\res\shaders\Shadow.hlsli" />
+    <None Include="..\res\shaders\SphericalHarmonics.hlsli" />
+    <None Include="..\res\shaders\TextureUtil.hlsli" />
+    <None Include="..\res\shaders\WaveHelper.hlsli" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\res\shaders\ColorFilterCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">6.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\CopyPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\CrossBilateralFilterCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">6.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">6.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">6.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\FullScreenVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ImGuiPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">6.4</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ImGuiVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">6.4</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">6.4</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ShapePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ShapeVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkyBoxPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkyBoxVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkySpherePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkySphereVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SpritePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SpriteVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\TaaCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='ReleaseMD|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMT|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='DebugMD|x64'">Compute</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.targets" Condition="Exists('..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューター上にない NuGet パッケージを参照しています。それらのパッケージをダウンロードするには、[NuGet パッケージの復元] を使用します。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。見つからないファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.props'))" />
+    <Error Condition="!Exists('..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\samples\MeshletCulling\packages\Microsoft.Direct3D.DXC.1.9.2602.17\build\native\Microsoft.Direct3D.DXC.targets'))" />
+  </Target>
+</Project>

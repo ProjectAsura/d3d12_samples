@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../../external/asdx12/project/asdx12.vcxproj" Id="ecd906d6-5deb-4b5b-b919-05c147194c1d">
+    <BuildType Solution="Debug|*" Project="DebugMT" />
+    <BuildType Solution="Release|*" Project="ReleaseMT" />
+  </Project>
+  <Project Path="MeshletCompression.vcxproj" Id="16709b5b-0d28-4458-b985-61c6797ce79a" />
+</Solution>

@@ -1,0 +1,500 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\edit">
+      <UniqueIdentifier>{3109205d-44f8-4f6a-873a-1a2c2114e8d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\edit">
+      <UniqueIdentifier>{5844286c-c68c-494c-b554-973b151d6f5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external">
+      <UniqueIdentifier>{9fd8262d-c14d-4dae-bdcb-d5e06b7ce6af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\imgui">
+      <UniqueIdentifier>{2ff19ec3-05b3-4fbd-9605-ee6c04e16b3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\tinyxml2">
+      <UniqueIdentifier>{eccfe766-36ea-4686-bea7-47c33ff9efb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\fw">
+      <UniqueIdentifier>{ebcf41ae-6a63-44f6-8c83-c608f82d136e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\fw">
+      <UniqueIdentifier>{1bd64746-6373-4cbb-b9c9-aa9e450b10fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\gfx">
+      <UniqueIdentifier>{125a060f-ee53-4f62-b579-e8ef88e1da16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\gfx">
+      <UniqueIdentifier>{e195f819-9403-4ec1-980a-db7d1d5d123a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\res">
+      <UniqueIdentifier>{88ced615-62dd-45b6-94a8-825c1079d1f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\res">
+      <UniqueIdentifier>{35f7670c-6979-497d-86f0-ee107ba6071b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\fnd">
+      <UniqueIdentifier>{a60684e9-49f0-4707-9b5e-7575a5aa87dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\fnd">
+      <UniqueIdentifier>{17814e84-80c0-4d80-9375-aed24ea4b115}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\external\meshoptimizer">
+      <UniqueIdentifier>{46543bdd-ffc5-45ee-ba45-318107a7250c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\external\imgui\imgui.cpp">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\imgui\imgui_draw.cpp">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\imgui\imgui_widgets.cpp">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\tinyxml2\tinyxml2.cpp">
+      <Filter>ソース ファイル\external\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxEditParam.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxFileWatcher.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxGuiMgr.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxHistory.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxP4VHelper.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\edit\asdxTcpConnector.cpp">
+      <Filter>ソース ファイル\edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fw\asdxApp.cpp">
+      <Filter>ソース ファイル\fw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxCommandList.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxCommandQueue.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxPipelineState.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxRayTracing.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxTarget.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxTexture.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\res\asdxResTexture.cpp">
+      <Filter>ソース ファイル\res</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxFrameHeap.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxGamePad.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxKeyboard.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxLogger.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxMessage.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxMisc.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxMouse.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxRandom.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxTablet.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxThreadPool.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fw\asdxEntity.cpp">
+      <Filter>ソース ファイル\fw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxTokenizer.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxBuffer.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxScreenCapture.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxShaderCompiler.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxCamera.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fw\asdxAppCamera.cpp">
+      <Filter>ソース ファイル\fw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxDevice.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\imgui\imgui_tables.cpp">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\res\asdxResModel.cpp">
+      <Filter>ソース ファイル\res</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxBit.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxIndexHeap.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxOffsetAllocator.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fnd\asdxJobSystem.cpp">
+      <Filter>ソース ファイル\fnd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gfx\asdxShape.cpp">
+      <Filter>ソース ファイル\gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\allocator.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\clusterizer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\indexanalyzer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\indexcodec.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\indexgenerator.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\overdrawoptimizer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\partition.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\quantization.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\rasterizer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\simplifier.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\spatialorder.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\stripifier.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\vcacheoptimizer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\vertexcodec.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\vertexfilter.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\meshoptimizer\vfetchoptimizer.cpp">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\external\imgui\imconfig.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\imgui\imgui.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\imgui\imgui_internal.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\imgui\imstb_rectpack.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\imgui\imstb_textedit.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\imgui\imstb_truetype.h">
+      <Filter>ソース ファイル\external\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\tinyxml2\tinyxml2.h">
+      <Filter>ソース ファイル\external\tinyxml2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxEditParam.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxFileWatcher.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxGuiMgr.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxHistory.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxP4VHelper.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\edit\asdxTcpConnector.h">
+      <Filter>ヘッダー ファイル\edit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fw\asdxApp.h">
+      <Filter>ヘッダー ファイル\fw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxCommandList.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxCommandQueue.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxDisposer.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxPipelineState.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxRayTracing.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxTarget.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxTexture.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxView.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\res\asdxResTexture.h">
+      <Filter>ヘッダー ファイル\res</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxFrameHeap.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxHash.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxHid.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxList.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxLogger.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxMacro.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxMath.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxMisc.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxQueue.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxRef.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxSpinLock.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxStack.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxStepTimer.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxStopWatch.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxTablet.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxThreadPool.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxMessage.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fw\asdxEntity.h">
+      <Filter>ヘッダー ファイル\fw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxTokenizer.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxStringView.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxBuffer.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxCamera.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxScreenCpature.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxShaderCompiler.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fw\asdxAppCamera.h">
+      <Filter>ヘッダー ファイル\fw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxDevice.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxFunction.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\res\asdxResModel.h">
+      <Filter>ヘッダー ファイル\res</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxPool.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxBit.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxOctree.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxRelativePtr.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxIndexHeap.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxOffsetAllocator.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxChunkAllocator.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fnd\asdxJobSystem.h">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gfx\asdxShape.h">
+      <Filter>ヘッダー ファイル\gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\meshoptimizer\meshoptimizer.h">
+      <Filter>ソース ファイル\external\meshoptimizer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\shaders\BRDF.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\Math.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\Shadow.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\TextureUtil.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\include\fnd\asdxMath.inl">
+      <Filter>ヘッダー ファイル\fnd</Filter>
+    </None>
+    <None Include="..\res\shaders\Samplers.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\RayQuery.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\SphericalHarmonics.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="..\res\shaders\WaveHelper.hlsli">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\res\shaders\CopyPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\FullScreenVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ImGuiPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ImGuiVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkyBoxPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkyBoxVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkySpherePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SkySphereVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ColorFilterCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\CrossBilateralFilterCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SpriteVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\SpritePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\TaaCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ShapeVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\res\shaders\ShapePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

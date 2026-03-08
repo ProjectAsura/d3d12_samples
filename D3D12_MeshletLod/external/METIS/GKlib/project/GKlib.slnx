@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug_MD" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release_MD" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="GKlib.vcxproj" Id="3f9e29b8-b269-44e4-903d-1f3e4f62ee0f" />
+</Solution>

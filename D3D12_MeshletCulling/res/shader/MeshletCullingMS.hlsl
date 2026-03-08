@@ -30,7 +30,7 @@ struct MeshletInfo
 {
     uint        VertexOffset;
     uint        VertexCount;
-    uint        PrimitiveOffset;    
+    uint        PrimitiveOffset;
     uint        PrimitiveCount;
     uint        NormalCone;
     float4      BoundingSphere;

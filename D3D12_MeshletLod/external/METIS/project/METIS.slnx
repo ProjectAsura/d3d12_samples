@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug_MD" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release_MD" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="METIS.vcxproj" Id="0311227a-2d1d-4acc-9c8f-277cdd73aaeb" />
+</Solution>

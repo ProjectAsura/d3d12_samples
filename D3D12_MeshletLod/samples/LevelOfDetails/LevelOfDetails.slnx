@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../../external/asdx12/project/asdx12.vcxproj" Id="ecd906d6-5deb-4b5b-b919-05c147194c1d">
+    <BuildType Solution="Debug|*" Project="DebugMT" />
+    <BuildType Solution="Release|*" Project="ReleaseMT" />
+  </Project>
+  <Project Path="../../external/METIS/GKlib/project/GKlib.vcxproj" Id="3f9e29b8-b269-44e4-903d-1f3e4f62ee0f" />
+  <Project Path="../../external/METIS/project/METIS.vcxproj" Id="0311227a-2d1d-4acc-9c8f-277cdd73aaeb" />
+  <Project Path="LevelOfDetails.vcxproj" Id="b60c4a9c-4ffd-4d7c-a94c-45c7a43f8c3f" />
+</Solution>

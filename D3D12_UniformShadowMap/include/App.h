@@ -12,6 +12,10 @@
 #include <fw/asdxApp.h>
 #include <fw/asdxAppCamera.h>
 #include <gfx/asdxCommandQueue.h>
+#include <gfx/asdxBuffer.h>
+#include <gfx/asdxModelManager.h>
+#include <gfx/asdxTextureManager.h>
+#include <gfx/asdxPipelineState.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,9 +52,21 @@ private:
     //=========================================================================
     // private variables.
     //=========================================================================
-    asdx::AppCamera     m_Camera;
-    asdx::WaitPoint     m_FrameWaitPoint;
-
+    asdx::AppCamera                     m_Camera;
+    asdx::WaitPoint                     m_FrameWaitPoint;
+    asdx::ModelHolder                   m_Model;
+    asdx::TextureHolder                 m_DFGMap;
+    asdx::TextureHolder                 m_DiffuseLDMap;
+    asdx::TextureHolder                 m_SpecularLDMap;
+    asdx::RefPtr<ID3D12RootSignature>   m_RootSig;
+    asdx::GraphicsPipelineState         m_OpaqueState;
+    asdx::GraphicsPipelineState         m_AlphaBlendState;
+    asdx::DoubledConstantBuffer         m_SceneBuffer;
+    asdx::DoubledConstantBuffer         m_DirLightBuffer;
+    asdx::DoubledConstantBuffer         m_ShadowSceneBuffer;
+    asdx::GraphicsPipelineState         m_ShadowState;
+    asdx::DepthTarget                   m_ShadowMap;
+    asdx::Vector3                       m_DirLightForward = asdx::Vector3(0.0f, -1.0f, 1.0f);
 
     //=========================================================================
     // private methods.

@@ -10,6 +10,7 @@
 #include "App.h"
 #include <fnd/asdxLogger.h>
 #include <fnd/asdxFileIO.h>
+#include <fnd/asdxMisc.h>
 #include <gfx/asdxDevice.h>
 #include <gfx/asdxPresetState.h>
 #include <edit/asdxGuiMgr.h>
@@ -21,6 +22,9 @@
 
 namespace {
 
+//-----------------------------------------------------------------------------
+// Shaders
+//-----------------------------------------------------------------------------
 #include "../res/shaders/Compiled/MeshVS.inc"
 #include "../res/shaders/Compiled/MeshPS.inc"
 
@@ -28,11 +32,15 @@ namespace {
 //#include "../res/shaders/Compiled/ShadowPS.inc"
 
 
+///////////////////////////////////////////////////////////////////////////////
+// ROOT_PARAM enum
+///////////////////////////////////////////////////////////////////////////////
 enum ROOT_PARAM
 {
     ROOT_PARAM_B0,
     ROOT_PARAM_B1,
     ROOT_PARAM_B2,
+    ROOT_PARAM_B3,
     ROOT_PARAM_T0,
     ROOT_PARAM_T1,
     ROOT_PARAM_T2,
@@ -44,9 +52,11 @@ enum ROOT_PARAM
     MAX_ROOT_PARAM_COUNT,
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// SceneParam structure
+///////////////////////////////////////////////////////////////////////////////
 struct alignas(256) SceneParam
 {
-    asdx::Matrix    World;
     asdx::Matrix    View;
     asdx::Matrix    Proj;
     asdx::Vector3   CameraPos;
@@ -57,6 +67,17 @@ struct alignas(256) SceneParam
     float           TargetHeight;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// ModelParam structure
+///////////////////////////////////////////////////////////////////////////////
+struct alignas(256) ModelParam
+{
+    asdx::Matrix    World;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// DirLightParam structure
+///////////////////////////////////////////////////////////////////////////////
 struct alignas(256) DirLightParam
 {
     asdx::Vector3   LightDir;       // 照射方向.
@@ -64,13 +85,16 @@ struct alignas(256) DirLightParam
     float           LightIntensity;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// ShadowSceneParam structure
+///////////////////////////////////////////////////////////////////////////////
 struct alignas(256) ShadowSceneParam
 {
-    asdx::Matrix    World;
     asdx::Matrix    View;
     asdx::Matrix    Proj;
 };
 
+// 通常描画用入力レイアウト.
 static const D3D12_INPUT_ELEMENT_DESC InputElements[] = {
     { "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "NORMAL"     , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -79,7 +103,7 @@ static const D3D12_INPUT_ELEMENT_DESC InputElements[] = {
     { "COLOR"      , 0, DXGI_FORMAT_R8G8B8A8_UNORM    , 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
-
+// シャドウマップ描画用入力レイアウト.
 static const D3D12_INPUT_ELEMENT_DESC ShadowInputElements[] = {
     { "POSITION"   , 0, DXGI_FORMAT_R32G32B32_FLOAT   , 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -165,6 +189,20 @@ bool SampleApp::OnInit()
         }
     }
 
+    // 線分レンダラー初期化.
+    if (!m_LineRenderer.Init(UINT16_MAX, m_SwapChainFormat, m_DepthStencilFormat))
+    {
+        ELOGA("Error : LineRenderer::Init() Failed.");
+        return false;
+    }
+
+    // スプライトレンダラー初期化.
+    if (!m_SpriteRenderer.Init(m_Width, m_Height, 512, 512, m_SwapChainFormat, m_DepthStencilFormat))
+    {
+        ELOGA("Error : SpriteRenderer::Init() Failed.");
+        return false;
+    }
+
     // ルートシグニチャ初期化.
     {
         D3D12_DESCRIPTOR_RANGE ranges[8] = {};
@@ -181,6 +219,7 @@ bool SampleApp::OnInit()
         asdx::InitAsCBV(params[ROOT_PARAM_B0], 0, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsCBV(params[ROOT_PARAM_B1], 1, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsCBV(params[ROOT_PARAM_B2], 2, D3D12_SHADER_VISIBILITY_ALL);
+        asdx::InitAsCBV(params[ROOT_PARAM_B3], 3, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsTable(params[ROOT_PARAM_T0], 1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
         asdx::InitAsTable(params[ROOT_PARAM_T1], 1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
         asdx::InitAsTable(params[ROOT_PARAM_T2], 1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
@@ -301,6 +340,19 @@ bool SampleApp::OnInit()
             ELOGA("Error : Buffer::Init() Failed.");
             return false;
         }
+
+        if (!m_ModelParamBuffer.Init(sizeof(ModelParam)))
+        {
+            ELOGA("Error : Buffer::Init() Failed.");
+            return false;
+        }
+    }
+
+    // モデルバッファ更新.
+    {
+        auto ptr = m_ModelParamBuffer.MapAs<ModelParam>();
+        ptr->World = asdx::Matrix::CreateIdentity();
+        m_ModelParamBuffer.Unmap( );
     }
 
     // テクスチャ初期化.
@@ -342,6 +394,15 @@ bool SampleApp::OnInit()
         if (!m_ShadowMap.Init(&desc))
         {
             ELOGA("Error : DepthTarget::Init() Failed.");
+            return false;
+        }
+    }
+
+    // サンプラー初期化.
+    {
+        if (!m_LinerClamp.Init(&asdx::Sampler::LinearClamp))
+        {
+            ELOG("Error : Sampler::Init() Failed.");
             return false;
         }
     }
@@ -390,23 +451,30 @@ void SampleApp::OnTerm()
     }
     #endif
 
+    m_SpriteRenderer.Term();
+    m_LineRenderer.Term();
+
     // シャドウマップ初期化.
     m_ShadowMap.Term();
 
     // 定数バッファ解放.
-    m_SceneBuffer.Term();
-    m_DirLightBuffer.Term();
+    m_SceneBuffer      .Term();
+    m_DirLightBuffer   .Term();
     m_ShadowSceneBuffer.Term();
+    m_ModelParamBuffer .Term();
+
+    // サンプラー解放.
+    m_LinerClamp.Term();
 
     // テクスチャ解放.
-    m_DFGMap.Reset();
+    m_DFGMap       .Reset();
     m_SpecularLDMap.Reset();
-    m_DiffuseLDMap.Reset();
+    m_DiffuseLDMap .Reset();
 
     // ステート解放.
     m_AlphaBlendState.Term();
-    m_OpaqueState.Term();
-    m_ShadowState.Term();
+    m_OpaqueState    .Term();
+    m_ShadowState    .Term();
 
     // ルートシグニチャ解放.
     m_RootSig.Reset();
@@ -430,8 +498,26 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     {
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
+
+        if (ImGui::Begin(asdx::ToChar(u8"デバッグ設定")))
+        {
+            ImGui::Checkbox(asdx::ToChar(u8"シャドウ描画"), &m_EnableShadow);
+            ImGui::Checkbox(asdx::ToChar(u8"シャドウ錐台表示"), &m_ShowShadowFrustum);
+            ImGui::Checkbox(asdx::ToChar(u8"シャドウマップ表示"), &m_ShowShadowMap);
+            ImGui::Checkbox(asdx::ToChar(u8"シーンボックス表示"), &m_ShowSceneBox);
+            ImGui::Checkbox(asdx::ToChar(u8"シーンスフィア表示"), &m_ShowSceneSphere);
+
+            ImGui::End();
+        }
     }
     #endif
+
+    // 線分レンダラーリセット処理.
+    m_LineRenderer.Reset();
+
+    // スプライトレンダラーリセット処理.
+    m_SpriteRenderer.Reset();
+    m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
     // シーン定数バッファ更新.
     {
@@ -441,7 +527,6 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         auto farClip        = m_Camera.GetFarClip();
 
         SceneParam param = {};
-        param.World         = asdx::Matrix::CreateIdentity();
         param.View          = m_Camera.GetView();
         param.Proj          = asdx::Matrix::CreatePerspectiveFieldOfView(fov, aspectRatio, nearClip, farClip);
         param.CameraPos     = m_Camera.GetPosition();
@@ -456,9 +541,16 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     // ライトバッファ更新.
     {
+        auto theta = asdx::ToRadian(m_DirLightAngle.y);
+        auto phi   = asdx::ToRadian(m_DirLightAngle.x);
+
+        m_DirLightForward.x = cos(theta) * cos(phi);
+        m_DirLightForward.y = sin(theta);
+        m_DirLightForward.z = cos(theta) * sin(phi);
+
         DirLightParam param = {};
 
-        param.LightColor     = asdx::Vector3(1.0f,  1.0f, 1.0f);
+        param.LightColor     = asdx::Vector3(1.0f, 1.0f, 1.0f);
         param.LightDir       = m_DirLightForward;
         param.LightIntensity = 1.0f;
 
@@ -470,18 +562,61 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         asdx::Vector3 right, upward;
         asdx::CalcONB(m_DirLightForward, right, upward);
 
-        auto desc = m_ShadowMap.GetDesc();
-        auto shadowCameraPos = asdx::Vector3(0.0f, 0.0f, 0.0f);
-        auto nearClip = 0.1f;
-        auto farClip = 100.0f;
+        const auto& sphere = m_Model.GetSphere();
+        const auto& box    = m_Model.GetBox();
+        auto corners = box.GetCorners();
 
+        if (m_ShowSceneBox)
+            asdx::DrawWireBox(m_LineRenderer, box.Mini, box.Maxi, asdx::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        if (m_ShowSceneSphere)
+            asdx::DrawWireSphere(m_LineRenderer, sphere.Center, sphere.Radius, asdx::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        auto nearClip  = 1.0f;
+        auto cameraPos = sphere.Center + m_DirLightForward * (nearClip - sphere.Radius);
+
+        // ライトからのビュー行列を作成.
+        m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
+
+        // ライト空間に変換.
+        for(auto i=0; i<corners.size(); ++i)
+            corners[i] = asdx::Vector3::TransformCoord(corners[i], m_ShadowView);
+
+        // ライト空間でのAABBを求める.
+        auto lightBox = asdx::BoundingBox3::Create(&corners[0].x, corners.size(), sizeof(asdx::Vector3));
+        auto w = abs(lightBox.Maxi.x - lightBox.Mini.x);
+        auto h = abs(lightBox.Maxi.y - lightBox.Mini.y);
+        auto d = abs(lightBox.Maxi.z - lightBox.Mini.z);
+
+        // 最適なカメラ位置とファークリップ距離を求める.
+        cameraPos = sphere.Center + m_DirLightForward * (nearClip - d * 0.5f);
+        auto farClip = nearClip + d;
+
+        // ライト空間のビュー行列と射影行列を求める.
+        m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
+        m_ShadowProj = asdx::Matrix::CreateOrthographic(w, h, nearClip, farClip);
+
+        // 定数バッファ更新.
         ShadowSceneParam param = {};
-
-        param.World = asdx::Matrix::CreateIdentity();
-        param.View  = asdx::Matrix::CreateLookTo(shadowCameraPos, m_DirLightForward, upward);
-        param.Proj  = asdx::Matrix::CreateOrthographic(float(desc.Width), float(desc.Height), nearClip, farClip);
-
+        param.View  = m_ShadowView;
+        param.Proj  = m_ShadowProj;
         m_ShadowSceneBuffer.Update(&param, sizeof(param));
+
+        // シャドウ錐台表示.
+        if (m_ShowShadowFrustum)
+        {
+            auto viewProj    = m_ShadowView * m_ShadowProj;
+            auto invViewProj = asdx::Matrix::Invert(viewProj);
+            asdx::DrawWireFrustum(m_LineRenderer, invViewProj, asdx::Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+
+        // シャドウマップ表示.
+        if (m_ShowShadowMap)
+        {
+            auto drawSize = 400;
+            m_SpriteRenderer.SetTexture(m_ShadowMap.GetGpuHandleSRV(), m_LinerClamp.GetGpuHandle());
+            m_SpriteRenderer.Add(0, m_Height - drawSize, drawSize, drawSize);
+        }
     }
 }
 
@@ -497,6 +632,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     auto pCmd = m_GfxCmdList.GetD3D12CommandList();
 
     // シャドウマップに描画.
+    if (m_EnableShadow)
     {
         asdx::ScopedMarker marker(pCmd, "Shadow Map Pass");
 
@@ -526,6 +662,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         pCmd->SetGraphicsRootSignature(m_RootSig.GetPtr());
         m_ShadowState.SetState(pCmd);
         pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B0, m_ShadowSceneBuffer.GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B1, m_ModelParamBuffer.GetGpuAddress());
         pCmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         if (m_Model.IsValid())
@@ -548,14 +685,13 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
                 pCmd->DrawIndexedInstanced(pMesh->GetIndexCount(), 1, 0, 0, 0);
             }
         }
-
-        m_ShadowMap.ChangeState(pCmd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     }
 
     // カラーバッファに描画.
     {
         asdx::ScopedMarker marker(pCmd, "Main Pass");
 
+        m_ShadowMap.ChangeState(pCmd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         m_ColorTarget[idx].ChangeState(pCmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
         auto handleRTV = m_ColorTarget[idx].GetCpuHandleRTV();
@@ -568,7 +704,8 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
         pCmd->SetGraphicsRootSignature(m_RootSig.GetPtr());
         pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B0, m_SceneBuffer.GetGpuAddress());
-        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B2, m_DirLightBuffer.GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B1, m_ModelParamBuffer.GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B3, m_DirLightBuffer.GetGpuAddress());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T4, m_DFGMap       .GetHandleGPU());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T5, m_DiffuseLDMap .GetHandleGPU());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T6, m_SpecularLDMap.GetHandleGPU());
@@ -602,7 +739,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
                 const auto IBV = pMesh->GetIndices().GetIBV();
 
-                pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B1, pMaterial->GetBuffer().GetGpuAddress());
+                pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B2, pMaterial->GetBuffer().GetGpuAddress());
                 pCmd->SetGraphicsRootDescriptorTable   (ROOT_PARAM_T0, pMaterial->GetTexture(asdx::Material::TEXTURE_BASE_COLOR).GetHandleGPU());
                 pCmd->SetGraphicsRootDescriptorTable   (ROOT_PARAM_T1, pMaterial->GetTexture(asdx::Material::TEXTURE_NORMAL)    .GetHandleGPU());
                 pCmd->SetGraphicsRootDescriptorTable   (ROOT_PARAM_T2, pMaterial->GetTexture(asdx::Material::TEXTURE_ORM)       .GetHandleGPU());
@@ -613,6 +750,15 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
                 pCmd->DrawIndexedInstanced(pMesh->GetIndexCount(), 1, 0, 0, 0);
             }
         }
+
+        // 線分描画.
+        m_LineRenderer.SetPipelineState(pCmd);
+        pCmd->SetGraphicsRootConstantBufferView(0, m_SceneBuffer.GetGpuAddress());
+        m_LineRenderer.Draw(pCmd);
+
+        // スプライト描画.
+        m_SpriteRenderer.SetPipelineState(pCmd);
+        m_SpriteRenderer.Draw(pCmd);
 
         #if ASDX_ENABLE_IMGUI
         {

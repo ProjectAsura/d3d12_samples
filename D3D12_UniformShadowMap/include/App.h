@@ -16,6 +16,9 @@
 #include <gfx/asdxModelManager.h>
 #include <gfx/asdxTextureManager.h>
 #include <gfx/asdxPipelineState.h>
+#include <gfx/asdxLine.h>
+#include <gfx/asdxSprite.h>
+#include <gfx/asdxSampler.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,6 +70,20 @@ private:
     asdx::GraphicsPipelineState         m_ShadowState;
     asdx::DepthTarget                   m_ShadowMap;
     asdx::Vector3                       m_DirLightForward = asdx::Vector3(0.0f, -1.0f, 1.0f);
+    asdx::LineRenderer                  m_LineRenderer;
+    asdx::Matrix                        m_ShadowView;
+    asdx::Matrix                        m_ShadowProj;
+    asdx::BoundingBox3                  m_SceneAABB;
+    asdx::ConstantBuffer                m_ModelParamBuffer;
+    asdx::SpriteRenderer                m_SpriteRenderer;
+    asdx::Sampler                       m_LinerClamp;
+    asdx::Vector2                       m_DirLightAngle = asdx::Vector2(30.0f, -45.0f);
+
+    bool m_EnableShadow         = true;
+    bool m_ShowShadowFrustum    = false;
+    bool m_ShowShadowMap        = true;
+    bool m_ShowSceneBox         = false;
+    bool m_ShowSceneSphere      = false;
 
     //=========================================================================
     // private methods.

@@ -10,6 +10,7 @@
 #include "asdxBRDF.hlsli"
 #include "asdxTangentSpace.hlsli"
 #include "asdxSamplers.hlsli"
+#include "asdxColor.hlsli"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,6 +72,15 @@ cbuffer LightParam : register(b3)
     float3 DirLightDir;
     float  DirLightIntensity;
     float3 DirLightColor;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// ShadowSceneParam constant buffer.
+///////////////////////////////////////////////////////////////////////////////
+cbuffer ShadowSceneParam : register(b4)
+{
+    float4x4 ShadowView;
+    float4x4 ShadowProj;
 };
 
 //-----------------------------------------------------------------------------
@@ -145,7 +155,7 @@ float3 EvaluateIBLSpecular
 float3 EvaluateDirectLight(float3 N, float3 V, float3 L, float3 Kd, float3 Ks, float roughness)
 {
     float3 H     = normalize(V + L);
-    float  NdotV = saturate(dot(N, V));
+    float  NdotV = abs(dot(N, V));
     float  LdotH = saturate(dot(L, H));
     float  NdotH = saturate(dot(N, H));
     float  NdotL = saturate(dot(N, L));
@@ -163,26 +173,65 @@ float3 EvaluateDirectLight(float3 N, float3 V, float3 L, float3 Kd, float3 Ks, f
 }
 
 //-----------------------------------------------------------------------------
+//      シャドウマップのテクセルサイズをデバッグ表示します.
+//-----------------------------------------------------------------------------
+float3 DrawGrid
+(
+    float3 base_color,
+    float2 texcoord,
+    float  grid_line_width,
+    float3 grid_color,
+    float  spacing
+)
+{
+    float2 scaledUV = texcoord * spacing;
+    float2 dx = float2( ddx_fine(scaledUV.x), ddy_fine(scaledUV.x) );
+    float2 dy = float2( ddx_fine(scaledUV.y), ddy_fine(scaledUV.y) );
+    float2 m  = frac( scaledUV );
+
+    if ( m.x < grid_line_width * length(dx) || m.y < grid_line_width * length(dy))
+    { return grid_color; }
+    else
+    { return base_color; }
+}
+
+//-----------------------------------------------------------------------------
+//      シャドウマップのエイリアシング誤差をデバッグ表示します.
+//-----------------------------------------------------------------------------
+float3 VisualizeError(float4 worldPos, float2 shadowUV)
+{
+    float2 mapSize;
+    ShadowMap.GetDimensions(mapSize.x, mapSize.y);
+
+    float2 ds = mapSize.x * ddx_fine(shadowUV.xy);
+    float2 dt = mapSize.y * ddy_fine(shadowUV.xy);
+    const float s = 0.1f; // [0, 10.0]の値を[0, 1]にマッピングするので0.1倍.
+    float error = max(length(ds + dt), length(ds - dt)) * s;
+    return HueToRGB(error);
+}
+
+//-----------------------------------------------------------------------------
 //      メインエントリーポイントです.
 //-----------------------------------------------------------------------------
 float4 main(const VSOutput input) : SV_TARGET0
 {
     float3 gN = normalize(input.Normal);
     float3 gT = normalize(input.Tangent.xyz);
-    float3 gB = normalize(cross(gN, gT) * input.Tangent.w);
+    float3 gB = normalize(cross(gT, gN) * input.Tangent.w);
  
     float3 tN = normalize(NormalMap.Sample(LinearClamp, input.TexCoord).xyz * 2.0f - 1.0f);
 
     float3 N = FromTangentSpaceToWorld(tN, gT, gB, gN);
     float3 T = RecalcTangent(N, gN);
-    float3 B = cross(T, N);
+    float3 B = normalize(cross(T, N));
 
     float4 output = 1.0f.xxxx;
 
-    float3 V = normalize(input.WorldPos.xyz - CameraPos);
-    float3 R = normalize(reflect(V, N));
+    float3 V = normalize(CameraPos - input.WorldPos.xyz); // カメラに向かう方向.
+    float3 R = normalize(reflect(-V, N));
+    float3 L = normalize(-DirLightDir); // ライトに向かう方向にする.
  
-    float NoV = saturate(dot(N, V));
+    float NoV = abs(dot(N, V));
 
     float4 bc  = BaseColorMap.Sample(LinearWrap, input.TexCoord);
     bc.rgb *= BaseColor;
@@ -196,10 +245,20 @@ float4 main(const VSOutput input) : SV_TARGET0
     float3 Kd = ToKd(bc.rgb, orm.z);
     float3 Ks = ToKs(bc.rgb, orm.z);
     
-    float shadow = 1.0f;
+    // ビュー射影空間に変換.
+    float4 shadowViewPos = mul(ShadowView, input.WorldPos);
+    float4 shadowProjPos = mul(ShadowProj, shadowViewPos);
+
+    // 正規化デバイス座標系に変換.
+    shadowProjPos.xyz /= shadowProjPos.w;
+ 
+    // テクスチャ座標系に変換.
+    float2 shadowUV = shadowProjPos.xy * float2(0.5f, -0.5f) + 0.5f;
+
+    float shadow = ShadowMap.SampleCmpLevelZero(LessEqualSampler, shadowUV, saturate(shadowProjPos.z - 0.003f));
  
     float3 lit = 0;
-    lit += EvaluateDirectLight(N, -V, -DirLightDir, Kd, Ks, orm.y) * (DirLightColor * DirLightIntensity) * shadow;
+    lit += EvaluateDirectLight(N, V, L, Kd, Ks, orm.y) * (DirLightColor * DirLightIntensity) * shadow;
     lit += EvaluateIBLDiffuse(N) * Kd * orm.x;
     lit += EvaluateIBLSpecular(NoV, N, R, Ks, orm.y) * orm.x;
     lit += EmissiveMap.Sample(LinearWrap, input.TexCoord).xyz * Emissive;
@@ -208,6 +267,11 @@ float4 main(const VSOutput input) : SV_TARGET0
 
     if (output.a < AlphaCutOff)
     { discard; }
+ 
+#if 0
+    output.rgb = VisualizeError(input.WorldPos, shadowUV);
+    //output.rgb = DrawGrid(output.rgb, shadowUV, 2.0f, float3(1.0f, 0.0f, 0.0f), 1024.0f);
+#endif
 
-    return output;
+    return SaturateFloat(output);
 }

@@ -77,7 +77,7 @@ private:
     asdx::ConstantBuffer                m_ModelParamBuffer;
     asdx::SpriteRenderer                m_SpriteRenderer;
     asdx::Sampler                       m_LinerClamp;
-    asdx::Vector2                       m_DirLightAngle = asdx::Vector2(30.0f, -45.0f);
+    asdx::Vector2                       m_DirLightAngle = asdx::Vector2(0.0f, -30.0f);
 
     bool m_EnableShadow         = true;
     bool m_ShowShadowFrustum    = false;

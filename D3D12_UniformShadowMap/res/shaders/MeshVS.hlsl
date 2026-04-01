@@ -66,9 +66,21 @@ VSOutput main(const VSInput input)
     float3 worldNormal  = normalize(mul((float3x3)World, input.Normal));
     float3 worldTangent = normalize(mul((float3x3)World, input.Tangent.xyz));
 
+    // 従接線を求めてチェック.
+    float  s = input.Tangent.w;
+    float3 B = cross(worldTangent, worldNormal) * input.Tangent.w;
+
+    // 長さがゼロになる場合は、フォールバック.
+    if (dot(B, B) < 1e-6f)
+    {
+        float3 axis = abs(worldNormal.z) < 0.999f ? float3(0, 0, 1) : float3(0, 1, 0);
+        worldTangent = normalize(cross(axis, worldNormal));
+        s = 1.0f;
+    }
+
     output.Position     = projPos;
     output.Normal       = worldNormal;
-    output.Tangent      = float4(worldTangent, input.Tangent.w);
+    output.Tangent      = float4(worldTangent, s);
     output.TexCoord     = input.TexCoord;
     output.Color        = input.Color;
     output.WorldPos     = worldPos;

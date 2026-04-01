@@ -41,6 +41,7 @@ enum ROOT_PARAM
     ROOT_PARAM_B1,
     ROOT_PARAM_B2,
     ROOT_PARAM_B3,
+    ROOT_PARAM_B4,
     ROOT_PARAM_T0,
     ROOT_PARAM_T1,
     ROOT_PARAM_T2,
@@ -220,6 +221,7 @@ bool SampleApp::OnInit()
         asdx::InitAsCBV(params[ROOT_PARAM_B1], 1, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsCBV(params[ROOT_PARAM_B2], 2, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsCBV(params[ROOT_PARAM_B3], 3, D3D12_SHADER_VISIBILITY_ALL);
+        asdx::InitAsCBV(params[ROOT_PARAM_B4], 4, D3D12_SHADER_VISIBILITY_ALL);
         asdx::InitAsTable(params[ROOT_PARAM_T0], 1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
         asdx::InitAsTable(params[ROOT_PARAM_T1], 1, &ranges[1], D3D12_SHADER_VISIBILITY_PIXEL);
         asdx::InitAsTable(params[ROOT_PARAM_T2], 1, &ranges[2], D3D12_SHADER_VISIBILITY_PIXEL);
@@ -303,7 +305,7 @@ bool SampleApp::OnInit()
         //desc.PS                             = { ShadowPS, sizeof(ShadowPS) };
         desc.BlendState                     = asdx::Preset::Opaque;
         desc.SampleMask                     = D3D12_DEFAULT_SAMPLE_MASK;
-        desc.RasterizerState                = asdx::Preset::CullFront;
+        desc.RasterizerState                = asdx::Preset::CullBack;
         desc.DepthStencilState              = asdx::Preset::DepthReadWrite;
         desc.InputLayout.NumElements        = _countof(ShadowInputElements);
         desc.InputLayout.pInputElementDescs = ShadowInputElements;
@@ -521,16 +523,16 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     // シーン定数バッファ更新.
     {
-        auto fov            = asdx::ToRadian(37.5f);
+        auto fieldOfView    = asdx::ToRadian(37.5f);
         auto aspectRatio    = float(m_Width) / float(m_Height);
         auto nearClip       = m_Camera.GetNearClip();
         auto farClip        = m_Camera.GetFarClip();
 
         SceneParam param = {};
         param.View          = m_Camera.GetView();
-        param.Proj          = asdx::Matrix::CreatePerspectiveFieldOfView(fov, aspectRatio, nearClip, farClip);
+        param.Proj          = asdx::Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio, nearClip, farClip);
         param.CameraPos     = m_Camera.GetPosition();
-        param.FieldOfView   = fov;
+        param.FieldOfView   = fieldOfView;
         param.NearClip      = nearClip;
         param.FarClip       = farClip;
         param.TargetWidth   = float(m_Width);
@@ -541,17 +543,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     // ライトバッファ更新.
     {
-        auto theta = asdx::ToRadian(m_DirLightAngle.y);
-        auto phi   = asdx::ToRadian(m_DirLightAngle.x);
+        //auto theta = asdx::ToRadian(m_DirLightAngle.y);
+        //auto phi   = asdx::ToRadian(m_DirLightAngle.x);
 
-        m_DirLightForward.x = cos(theta) * cos(phi);
-        m_DirLightForward.y = sin(theta);
-        m_DirLightForward.z = cos(theta) * sin(phi);
+        //m_DirLightForward.x = cos(theta) * cos(phi);
+        //m_DirLightForward.y = sin(theta);
+        //m_DirLightForward.z = cos(theta) * sin(phi);
+        m_DirLightForward = asdx::Vector3(1.0f, -0.5f, 0.0f);
 
         DirLightParam param = {};
 
         param.LightColor     = asdx::Vector3(1.0f, 1.0f, 1.0f);
-        param.LightDir       = m_DirLightForward;
+        param.LightDir       = asdx::Vector3::Normalize(m_DirLightForward);
         param.LightIntensity = 1.0f;
 
         m_DirLightBuffer.Update(&param, sizeof(param));
@@ -703,9 +706,10 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
         pCmd->SetGraphicsRootSignature(m_RootSig.GetPtr());
-        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B0, m_SceneBuffer.GetGpuAddress());
-        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B1, m_ModelParamBuffer.GetGpuAddress());
-        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B3, m_DirLightBuffer.GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B0, m_SceneBuffer      .GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B1, m_ModelParamBuffer .GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B3, m_DirLightBuffer   .GetGpuAddress());
+        pCmd->SetGraphicsRootConstantBufferView(ROOT_PARAM_B4, m_ShadowSceneBuffer.GetGpuAddress());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T4, m_DFGMap       .GetHandleGPU());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T5, m_DiffuseLDMap .GetHandleGPU());
         pCmd->SetGraphicsRootDescriptorTable(ROOT_PARAM_T6, m_SpecularLDMap.GetHandleGPU());

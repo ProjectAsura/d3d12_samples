@@ -12,6 +12,9 @@
 #include "asdxSamplers.hlsli"
 #include "asdxColor.hlsli"
 
+#define DEBUG_FLAG_ALIASING_ERROR   (0x1u << 0)
+#define DEBUG_FLAG_SHADOW_TEXEL     (0x1u << 1)
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // VSOutput structure
@@ -81,6 +84,9 @@ cbuffer ShadowSceneParam : register(b4)
 {
     float4x4 ShadowView;
     float4x4 ShadowProj;
+    uint     ShadowDebugFlags;
+    float    ShadowMapSize;
+    uint2    ShadowReserved0;
 };
 
 //-----------------------------------------------------------------------------
@@ -207,7 +213,7 @@ float3 VisualizeError(float4 worldPos, float2 shadowUV)
     float2 dt = mapSize.y * ddy_fine(shadowUV.xy);
     const float s = 0.1f; // [0, 10.0]の値を[0, 1]にマッピングするので0.1倍.
     float error = max(length(ds + dt), length(ds - dt)) * s;
-    return HueToRGB(error);
+    return HueToRGB(saturate(error));
 }
 
 //-----------------------------------------------------------------------------
@@ -268,10 +274,13 @@ float4 main(const VSOutput input) : SV_TARGET0
     if (output.a < AlphaCutOff)
     { discard; }
  
-#if 0
-    output.rgb = VisualizeError(input.WorldPos, shadowUV);
-    //output.rgb = DrawGrid(output.rgb, shadowUV, 2.0f, float3(1.0f, 0.0f, 0.0f), 1024.0f);
-#endif
+    // エイリアシングエラーを表示.
+    if (!!(ShadowDebugFlags & DEBUG_FLAG_ALIASING_ERROR))
+        output.rgb = VisualizeError(input.WorldPos, shadowUV);
+
+    // シャドウマップテクセルを表示.
+    if (!!(ShadowDebugFlags & DEBUG_FLAG_SHADOW_TEXEL))
+        output.rgb = DrawGrid(output.rgb, shadowUV, 2.0f, float3(1.0f, 0.0f, 0.0f), ShadowMapSize / 16.0f); // 16 pixel ごとにグリッドを表示.
 
     return SaturateFloat(output);
 }

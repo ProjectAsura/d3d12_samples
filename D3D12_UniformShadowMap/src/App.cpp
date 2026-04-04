@@ -13,6 +13,7 @@
 #include <fnd/asdxMisc.h>
 #include <gfx/asdxDevice.h>
 #include <gfx/asdxPresetState.h>
+#include <gfx/asdxShape.h>
 #include <edit/asdxGuiMgr.h>
 #include <imgui.h>
 
@@ -31,6 +32,9 @@ namespace {
 #include "../res/shaders/Compiled/ShadowVS.inc"
 //#include "../res/shaders/Compiled/ShadowPS.inc"
 
+
+static constexpr uint32_t SHADOW_DEBUG_FLAG_ALIAING_ERROR = 0x1 << 0;
+static constexpr uint32_t SHADOW_DEBUG_FLAG_SHADOW_TEXEL  = 0x1 << 1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // ROOT_PARAM enum
@@ -93,6 +97,9 @@ struct alignas(256) ShadowSceneParam
 {
     asdx::Matrix    View;
     asdx::Matrix    Proj;
+    uint32_t        Flags;
+    float           MapSize;
+    ASDX_PADDING(2);
 };
 
 // 通常描画用入力レイアウト.
@@ -179,6 +186,30 @@ bool SampleApp::OnInit()
         return false;
     }
 
+    if (!m_ShapeState.Init(m_SwapChainFormat, m_DepthStencilFormat))
+    {
+        ELOGA("Error : ShapdeState::Init() Failed.");
+        return false;
+    }
+
+    if (!m_BoxShape.Init(1.0f))
+    {
+        ELOGA("Error : BoxShape::Init() Failed.");
+        return false;
+    }
+
+    if (!m_SphereShape.Init(1.0f, 20))
+    {
+        ELOGA("Error : SphereShape::Init() Failed.");
+        return false;
+    }
+
+    if (!m_ShapeParams.Init(32))
+    {
+        ELOGA("Error : ShapeParam::Init() Failed.");
+        return false;
+    }
+
     // モデルの読み込み.
     {
         const char* path = "../res/models/rt_camp_2025/rt_camp_2025.mdb";
@@ -203,6 +234,7 @@ bool SampleApp::OnInit()
         ELOGA("Error : SpriteRenderer::Init() Failed.");
         return false;
     }
+
 
     // ルートシグニチャ初期化.
     {
@@ -453,8 +485,13 @@ void SampleApp::OnTerm()
     }
     #endif
 
+    m_ShapeParams.Term();
+    m_SphereShape.Term();
+    m_BoxShape   .Term();
+    m_ShapeState .Term();
+
     m_SpriteRenderer.Term();
-    m_LineRenderer.Term();
+    m_LineRenderer  .Term();
 
     // シャドウマップ初期化.
     m_ShadowMap.Term();
@@ -508,6 +545,10 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             ImGui::Checkbox(asdx::ToChar(u8"シャドウマップ表示"), &m_ShowShadowMap);
             ImGui::Checkbox(asdx::ToChar(u8"シーンボックス表示"), &m_ShowSceneBox);
             ImGui::Checkbox(asdx::ToChar(u8"シーンスフィア表示"), &m_ShowSceneSphere);
+            ImGui::Checkbox(asdx::ToChar(u8"スフィアで計算"), &m_CalcBySphere);
+            ImGui::Checkbox(asdx::ToChar(u8"エイリアシング誤差表示"), &m_ShowAliasingError);
+            ImGui::Checkbox(asdx::ToChar(u8"シャドウテクセル表示"), &m_ShowShadowTexelGrid);
+            ImGui::DragFloat2(asdx::ToChar(u8"ライト角度"), &m_DirLightAngle.x, 0.1f);
 
             ImGui::End();
         }
@@ -539,17 +580,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         param.TargetHeight  = float(m_Height);
 
         m_SceneBuffer.Update(&param, sizeof(param), 0);
+
+        m_ShapeState.SetViewProj(param.View, param.Proj);
     }
 
     // ライトバッファ更新.
     {
-        //auto theta = asdx::ToRadian(m_DirLightAngle.y);
-        //auto phi   = asdx::ToRadian(m_DirLightAngle.x);
+        auto theta = asdx::ToRadian(m_DirLightAngle.y);
+        auto phi   = asdx::ToRadian(m_DirLightAngle.x);
 
-        //m_DirLightForward.x = cos(theta) * cos(phi);
-        //m_DirLightForward.y = sin(theta);
-        //m_DirLightForward.z = cos(theta) * sin(phi);
-        m_DirLightForward = asdx::Vector3(1.0f, -0.5f, 0.0f);
+        m_DirLightForward.x = cos(theta) * cos(phi);
+        m_DirLightForward.y = sin(theta);
+        m_DirLightForward.z = cos(theta) * sin(phi);
 
         DirLightParam param = {};
 
@@ -560,49 +602,46 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         m_DirLightBuffer.Update(&param, sizeof(param));
     }
 
+    {
+        const auto& box = m_Model.GetBox();
+        auto size = asdx::Vector3::Abs(box.Maxi - box.Mini);
+        auto mtx  = asdx::Matrix::CreateScale(size);
+        mtx = asdx::Matrix::AppendTranslation(mtx, box.GetCenter());
+        m_ShapeParams.SetWorld(0, mtx);
+        m_ShapeParams.SetColor(0, asdx::Vector4(1.0f, 1.0f, 0.0f, 0.25f));
+    }
+
+    {
+        const auto& sphere = m_Model.GetSphere();
+        auto mtx = asdx::Matrix::CreateScale(sphere.Radius);
+        mtx = asdx::Matrix::AppendTranslation(mtx, sphere.Center);
+        m_ShapeParams.SetWorld(1, mtx);
+        m_ShapeParams.SetColor(1, asdx::Vector4(0.0f, 1.0f, 1.0f, 0.25f));
+    }
+
     // シャドウシーンバッファ更新.
     {
-        asdx::Vector3 right, upward;
-        asdx::CalcONB(m_DirLightForward, right, upward);
+        // シャドウ行列を計算.
+        if (m_CalcBySphere)
+            CalcShadowMatrixBySphere();
+        else
+            CalcShadowMatrixByBox();
 
-        const auto& sphere = m_Model.GetSphere();
-        const auto& box    = m_Model.GetBox();
-        auto corners = box.GetCorners();
+        uint32_t flags = 0;
+        if (m_ShowAliasingError)
+            flags |= 0x1;
+        if (m_ShowShadowTexelGrid)
+            flags |= 0x2;
 
-        if (m_ShowSceneBox)
-            asdx::DrawWireBox(m_LineRenderer, box.Mini, box.Maxi, asdx::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        if (m_ShowSceneSphere)
-            asdx::DrawWireSphere(m_LineRenderer, sphere.Center, sphere.Radius, asdx::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
-
-        auto nearClip  = 1.0f;
-        auto cameraPos = sphere.Center + m_DirLightForward * (nearClip - sphere.Radius);
-
-        // ライトからのビュー行列を作成.
-        m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
-
-        // ライト空間に変換.
-        for(auto i=0; i<corners.size(); ++i)
-            corners[i] = asdx::Vector3::TransformCoord(corners[i], m_ShadowView);
-
-        // ライト空間でのAABBを求める.
-        auto lightBox = asdx::BoundingBox3::Create(&corners[0].x, corners.size(), sizeof(asdx::Vector3));
-        auto w = abs(lightBox.Maxi.x - lightBox.Mini.x);
-        auto h = abs(lightBox.Maxi.y - lightBox.Mini.y);
-        auto d = abs(lightBox.Maxi.z - lightBox.Mini.z);
-
-        // 最適なカメラ位置とファークリップ距離を求める.
-        cameraPos = sphere.Center + m_DirLightForward * (nearClip - d * 0.5f);
-        auto farClip = nearClip + d;
-
-        // ライト空間のビュー行列と射影行列を求める.
-        m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
-        m_ShadowProj = asdx::Matrix::CreateOrthographic(w, h, nearClip, farClip);
+        auto desc    = m_ShadowMap.GetDesc();
+        auto mapSize = asdx::Max(float(desc.Width), float(desc.Height));
 
         // 定数バッファ更新.
         ShadowSceneParam param = {};
-        param.View  = m_ShadowView;
-        param.Proj  = m_ShadowProj;
+        param.View      = m_ShadowView;
+        param.Proj      = m_ShadowProj;
+        param.Flags     = flags;
+        param.MapSize   = mapSize;
         m_ShadowSceneBuffer.Update(&param, sizeof(param));
 
         // シャドウ錐台表示.
@@ -764,6 +803,23 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         m_SpriteRenderer.SetPipelineState(pCmd);
         m_SpriteRenderer.Draw(pCmd);
 
+        auto addressGPU = m_ShapeParams.Update();
+        m_ShapeState.ApplyTranslucentState(pCmd);
+        pCmd->SetGraphicsRootConstantBufferView(asdx::ShapeStates::CBV0, m_ShapeState.GetBufferAddress());
+        pCmd->SetGraphicsRootShaderResourceView(asdx::ShapeStates::SRV0, addressGPU);
+
+        if (m_ShowSceneBox)
+        {
+            pCmd->SetGraphicsRoot32BitConstant(asdx::ShapeStates::CBV3, 0, 0);
+            m_BoxShape.Draw(pCmd);
+        }
+
+        if (m_ShowSceneSphere)
+        {
+            pCmd->SetGraphicsRoot32BitConstant(asdx::ShapeStates::CBV3, 1, 0);
+            m_SphereShape.Draw(pCmd);
+        }
+
         #if ASDX_ENABLE_IMGUI
         {
             // ImGui描画処理.
@@ -852,6 +908,16 @@ void SampleApp::OnMouse(const asdx::App::MouseEventArgs& args)
             args.IsDownX1,
             args.IsDownX2);
     }
+    else if (args.IsCtrlDown)
+    {
+        if (m_LeftDrag.IsDrag(args.X, args.Y, args.IsDownL))
+        {
+            auto diff = m_LeftDrag.CalcDiff();
+            m_DirLightAngle += diff * asdx::Vector2(1.0f, -1.0f) * 0.1f;
+            m_DirLightAngle.x = asdx::Clamp(m_DirLightAngle.x, -90.0f, 90.f);
+            m_DirLightAngle.y = asdx::Clamp(m_DirLightAngle.y, -90.0f, 90.f);
+        }
+    }
     else
     {
         #if ASDX_ENABLE_IMGUI
@@ -880,4 +946,63 @@ void SampleApp::OnTyping(uint32_t keyCode)
         asdx::GuiMgr::Instance().OnTyping(keyCode);
     }
     #endif
+}
+
+//-----------------------------------------------------------------------------
+//      バウンディングボックスを用いてシャドウ行列を計算します.
+//-----------------------------------------------------------------------------
+void SampleApp::CalcShadowMatrixByBox()
+{
+    asdx::Vector3 right, upward;
+    asdx::CalcONB(m_DirLightForward, right, upward);
+
+    const auto& box = m_Model.GetBox();
+    auto corners = box.GetCorners();
+
+    auto size = asdx::Vector3::Abs(box.Maxi - box.Mini);
+    auto dot  = asdx::Vector3::Dot(size, m_DirLightForward);
+
+    auto nearClip  = 1.0f;
+    auto cameraPos = box.GetCenter() + m_DirLightForward * (nearClip - dot);
+
+    // ライトからのビュー行列を作成.
+    m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
+
+    // ライト空間に変換.
+    for(auto i=0; i<corners.size(); ++i)
+        corners[i] = asdx::Vector3::TransformCoord(corners[i], m_ShadowView);
+
+    // ライト空間でのAABBを求める.
+    auto lightBox = asdx::BoundingBox3::Create(&corners[0].x, corners.size(), sizeof(asdx::Vector3));
+    auto w = abs(lightBox.Maxi.x - lightBox.Mini.x);
+    auto h = abs(lightBox.Maxi.y - lightBox.Mini.y);
+    auto d = abs(lightBox.Maxi.z - lightBox.Mini.z);
+
+    // 最適なカメラ位置とファークリップ距離を求める.
+    cameraPos = box.GetCenter() + m_DirLightForward * (nearClip - d * 0.5f);
+    auto farClip = nearClip + d;
+
+    // ライト空間のビュー行列と射影行列を求める.
+    m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
+    m_ShadowProj = asdx::Matrix::CreateOrthographic(w, h, nearClip, farClip);
+}
+
+//-----------------------------------------------------------------------------
+//      バウンディングスフィアを用いてシャドウ行列を計算します.
+//-----------------------------------------------------------------------------
+void SampleApp::CalcShadowMatrixBySphere()
+{
+    asdx::Vector3 right, upward;
+    asdx::CalcONB(m_DirLightForward, right, upward);
+
+    const auto& sphere = m_Model.GetSphere();
+    const auto R = sphere.Radius * 2.0f;
+
+    auto nearClip  = 1.0f;
+    auto cameraPos = sphere.Center + m_DirLightForward * (nearClip - sphere.Radius);
+    auto farClip   = nearClip + R;
+
+    // ライトからのビュー行列を作成.
+    m_ShadowView = asdx::Matrix::CreateLookTo(cameraPos, m_DirLightForward, upward);
+    m_ShadowProj = asdx::Matrix::CreateOrthographic(R, R, nearClip, farClip);
 }

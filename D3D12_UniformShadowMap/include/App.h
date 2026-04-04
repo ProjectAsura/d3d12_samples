@@ -19,6 +19,8 @@
 #include <gfx/asdxLine.h>
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxSampler.h>
+#include <gfx/asdxShape.h>
+#include <fnd/asdxDragTracker.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,13 +79,21 @@ private:
     asdx::ConstantBuffer                m_ModelParamBuffer;
     asdx::SpriteRenderer                m_SpriteRenderer;
     asdx::Sampler                       m_LinerClamp;
-    asdx::Vector2                       m_DirLightAngle = asdx::Vector2(0.0f, -30.0f);
+    asdx::Vector2                       m_DirLightAngle = asdx::Vector2(-45.0f, -30.0f);
+    asdx::ShapeStates                   m_ShapeState;
+    asdx::ShapeParams                   m_ShapeParams;
+    asdx::BoxShape                      m_BoxShape;
+    asdx::SphereShape                   m_SphereShape;
+    asdx::DragTracker                   m_LeftDrag;
 
     bool m_EnableShadow         = true;
     bool m_ShowShadowFrustum    = false;
     bool m_ShowShadowMap        = true;
     bool m_ShowSceneBox         = false;
     bool m_ShowSceneSphere      = false;
+    bool m_CalcBySphere         = true;
+    bool m_ShowAliasingError    = false;
+    bool m_ShowShadowTexelGrid  = false;
 
     //=========================================================================
     // private methods.
@@ -143,6 +153,16 @@ private:
     //! @param[in]      keyCode     キーコードです.
     //-------------------------------------------------------------------------
     void OnTyping(uint32_t keyCode) override;
+
+    //-------------------------------------------------------------------------
+    //! @brief      バウンディングボックスを用いてシャドウ用の行列を計算します.
+    //-------------------------------------------------------------------------
+    void CalcShadowMatrixByBox();
+
+    //-------------------------------------------------------------------------
+    //! @brief      バウンディングスフィアを用いてシャドウ用の行列を計算します.
+    //-------------------------------------------------------------------------
+    void CalcShadowMatrixBySphere();
 };
 
 

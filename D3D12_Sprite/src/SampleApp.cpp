@@ -39,7 +39,7 @@ SampleApp::SampleApp()
 
 #if ASDX_DEBUG
     m_DeviceDesc.EnableDebug   = true;
-    m_DeviceDesc.EnableCapture = true;
+    //m_DeviceDesc.EnableCapture = true;
 #endif
 }
 
@@ -94,8 +94,9 @@ bool SampleApp::OnInit()
     }
 
     {
+        asdx::fs::path input = "../res/textures/BackGround/back_ground.txb";
         asdx::fs::path path;
-        if (!asdx::SearchFilePath("../res/textures/BackGround/back_ground.txb", path))
+        if (!asdx::SearchFilePath(input, path))
         {
             ELOGA("Error : File Not Found.");
             return false;
@@ -109,12 +110,52 @@ bool SampleApp::OnInit()
         }
     }
 
-    m_TexturePL = asdx::TextureManager::Instance().GetOrCreate("../res/textures/kenney_space-shooter-remastered/playerShip3_green.txb");
-    if (!m_TexturePL.IsValid())
     {
-        ELOGA("Error : TextureManager::GetOrCreate() Failed.");
-        return false;
+        asdx::fs::path input = "../res/textures/kenney_space-shooter-remastered/playerShip3_green.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : File Not Found.");
+            return false;
+        }
+
+        m_TexturePL = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TexturePL.IsValid())
+        {
+            ELOGA("Error : TextureManager::GetOrCreate() Failed.");
+            return false;
+        }
     }
+
+    {
+        asdx::fs::path input = "../res/textures/kenney_space-shooter-remastered/laserGreen11.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : TextureManager::GetOrCreate() Failed.");
+            return false;
+        }
+
+        m_TextureLaser = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureLaser.IsValid())
+        {
+            ELOGA("Error : TextureManager::GetOrCreate() Failed.");
+            return false;
+        }
+    }
+
+    {
+        if (!m_LinearClamp.Init(&asdx::Sampler::LinearClamp))
+        {
+            ELOGA("Error : Sampler::Init() Failed.");
+            return false;
+        }
+    }
+
+    m_Pad.SetPlayerIndex(0);
+
+    m_PlayerPos.x = float(m_Width  / 2) - 46.0f;
+    m_PlayerPos.y = float(m_Height / 2) - 37.0f;
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -146,6 +187,10 @@ void SampleApp::OnTerm()
 {
     m_TextureBG.Reset();
     m_TexturePL.Reset();
+    m_TextureLaser.Reset();
+    m_LinearClamp.Term();
+
+    m_SpriteRenderer.Term();
 
     asdx::TextureManager::Instance().Term();
 
@@ -178,6 +223,113 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     // フレームリセット.
     m_SpriteRenderer.Reset();
+    m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
+
+    // HID更新.
+    m_Pad     .UpdateState();
+    m_Keyboard.UpdateState();
+
+    const asdx::Vector2 kPlayerSize(98.0f, 75.0f);
+    const asdx::Vector2 kLaserSize(9.0 * 2.0f, 54.0f * 2.0f);
+
+    const auto kMoveSpeedPL    = 500.0f;
+    const auto kMoveSpeedBG0   = 350.0f;
+    const auto kMoveSpeedBG1   = 800.0f;
+    const auto kMoveSpeedBG2   = 100.0f;
+    const auto kMoveSpeedLaser = 2400.0f;
+
+    m_OffsetBG0 += int(args.ElapsedTimeSec * kMoveSpeedBG0);
+    m_OffsetBG0 = asdx::Wrap(m_OffsetBG0, 0, int(m_Height));
+
+    m_OffsetBG1 += int(args.ElapsedTimeSec * kMoveSpeedBG1);
+    m_OffsetBG1 = asdx::Wrap(m_OffsetBG1, 0, int(m_Height));
+
+    m_OffsetBG2 += int(args.ElapsedTimeSec * kMoveSpeedBG2);
+    m_OffsetBG2 = asdx::Wrap(m_OffsetBG2, 0, int(m_Height));
+
+
+    // プレイヤー移動制御.
+    {
+        asdx::Vector2 dir = {};
+
+        auto isHoldL = m_Pad.IsHold(asdx::PAD_LEFT)  || m_Keyboard.IsHold('A');
+        auto isHoldR = m_Pad.IsHold(asdx::PAD_RIGHT) || m_Keyboard.IsHold('D');
+        auto isHoldU = m_Pad.IsHold(asdx::PAD_UP)    || m_Keyboard.IsHold('W');
+        auto isHoldD = m_Pad.IsHold(asdx::PAD_DOWN)  || m_Keyboard.IsHold('S');
+
+        if (isHoldL)
+            dir.x -= 1.0f;
+        else if (isHoldR)
+            dir.x += 1.0f;
+        else
+            dir.x += m_Pad.GetNormalizedThumbLX();
+
+        if (isHoldU)
+            dir.y -= 1.0f;
+        else if (isHoldD)
+            dir.y += 1.0f;
+        else
+            dir.y -= m_Pad.GetNormalizedThumbLY();
+
+
+        m_PlayerPos += dir * float(args.ElapsedTimeSec) * kMoveSpeedPL;
+        m_PlayerPos = asdx::Vector2::Clamp(m_PlayerPos, asdx::Vector2(0.0f, 0.0f), asdx::Vector2(m_Width - kPlayerSize.x, m_Height - kPlayerSize.y));
+    }
+
+    // レーザー移動制御.
+    for(auto& laser : m_Layers)
+    {
+        if (!laser.Shoot)
+            continue;
+
+        laser.Pos.y -= float(args.ElapsedTimeSec) * kMoveSpeedLaser;
+
+        // レーザー描画.
+        m_SpriteRenderer.SetTexture(m_TextureLaser.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+        m_SpriteRenderer.Add(int(laser.Pos.x), int(laser.Pos.y), int(kLaserSize.x), int(kLaserSize.y));
+
+        if ((laser.Pos.y + kLaserSize.y) < 0.0f)
+        {
+            laser.Shoot = false;
+            laser.Pos   = asdx::Vector2(0.0f, 0.0f);
+        }
+    }
+
+    // レーザー発射判定.
+    auto isShot = m_Pad.IsDown(asdx::PAD_B) || m_Keyboard.IsDown('J');
+    if (isShot)
+    {
+        auto& laser = m_Layers[m_LaserIndex];
+        if (!laser.Shoot)
+        {
+            laser.Pos   = m_PlayerPos + asdx::Vector2((kPlayerSize.x - kLaserSize.x) * 0.5f , -kLaserSize.y);
+            laser.Shoot = true;
+
+            m_LaserIndex = (m_LaserIndex + 1) % int(m_Layers.size());
+
+            m_SpriteRenderer.SetTexture(m_TextureLaser.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+            m_SpriteRenderer.Add(int(laser.Pos.x), int(laser.Pos.y), int(kLaserSize.x), int(kLaserSize.y));
+        }
+    }
+
+    // 背景描画.
+    m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+    m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 0.5f);
+    m_SpriteRenderer.Add(0, m_OffsetBG0, m_Width, m_Height);
+    m_SpriteRenderer.Add(0, m_OffsetBG0 - m_Height, m_Width, m_Height);
+
+    m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 0.5f);
+    m_SpriteRenderer.Add(0, m_OffsetBG1, m_Width, m_Height);
+    m_SpriteRenderer.Add(0, m_OffsetBG1 - m_Height, m_Width, m_Height);
+
+    m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    m_SpriteRenderer.Add(0, m_OffsetBG2, m_Width, m_Height);
+    m_SpriteRenderer.Add(0, m_OffsetBG2 - m_Height, m_Width, m_Height);
+
+    // プレイヤー描画.
+    m_SpriteRenderer.SetTexture(m_TexturePL.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+    m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    m_SpriteRenderer.Add(int(m_PlayerPos.x), int(m_PlayerPos.y), int(kPlayerSize.x), int(kPlayerSize.y));
 
 }
 
@@ -201,16 +353,19 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         pCmd->ResourceBarrier(1, &barrier);
     }
 
+    float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     auto handleRTV = m_ColorTarget[idx].GetCpuHandleRTV();
     auto handleDSV = m_DepthTarget.GetCpuHandleDSV();
     pCmd->OMSetRenderTargets(1, &handleRTV, FALSE, &handleDSV);
-    pCmd->ClearRenderTargetView(handleRTV, m_ClearColor, 0, nullptr);
+    pCmd->ClearRenderTargetView(handleRTV, clearColor, 0, nullptr);
     pCmd->ClearDepthStencilView(handleDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     pCmd->RSSetViewports(1, &m_Viewport);
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
-    // TODO : 描画処理.
+    // スプライト描画.
     {
+        m_SpriteRenderer.SetPipelineState(pCmd);
+        m_SpriteRenderer.Draw(pCmd);
     }
 
     #if ASDX_ENABLE_IMGUI

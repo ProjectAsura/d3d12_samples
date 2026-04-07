@@ -14,9 +14,12 @@
 #include <fnd/asdxMacro.h>
 #include <fw/asdxApp.h>
 #include <fw/asdxAppCamera.h>
+#include <fnd/asdxHid.h>
 #include <gfx/asdxCommandQueue.h>
 #include <gfx/asdxSprite.h>
+#include <gfx/asdxSampler.h>
 #include <gfx/asdxTextureManager.h>
+#include <array>
 
 #if ASDX_ENABLE_SOUND
 #include <fw/asdxSound.h>
@@ -54,6 +57,12 @@ public:
     ~SampleApp();
 
 private:
+    struct LaserInfo
+    {
+        asdx::Vector2 Pos   = asdx::Vector2(0.0f, 0.0f);    //!< 位置座標.
+        bool          Shoot = false;                        //!< 撃ったら true.
+    };
+
     //=========================================================================
     // private variables.
     //=========================================================================
@@ -62,6 +71,19 @@ private:
     asdx::SpriteRenderer    m_SpriteRenderer;
     asdx::TextureHolder     m_TextureBG;
     asdx::TextureHolder     m_TexturePL;
+    asdx::TextureHolder     m_TextureLaser;
+    asdx::Sampler           m_LinearClamp;
+
+
+    int                   m_OffsetBG0 = 10;
+    int                   m_OffsetBG1 = 30;
+    int                   m_OffsetBG2 = 75;
+    asdx::Vector2         m_PlayerPos;
+    asdx::GamePad         m_Pad;
+    asdx::Keyboard        m_Keyboard;
+    int                   m_LaserIndex = 0;
+
+    std::array<LaserInfo, 32>   m_Layers;
 
     //=========================================================================
     // private methods.

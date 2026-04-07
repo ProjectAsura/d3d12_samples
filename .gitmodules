@@ -4,3 +4,6 @@
 [submodule "D3D12_Sprite/external/asdx12"]
 	path = D3D12_Sprite/external/asdx12
 	url = https://github.com/ProjectAsura/asdx12.git
+[submodule "D3D12_SdfFont/external/asdx12"]
+	path = D3D12_SdfFont/external/asdx12
+	url = https://github.com/ProjectAsura/asdx12.git

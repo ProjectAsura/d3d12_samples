@@ -11,11 +11,51 @@
 #include <fnd/asdxPath.h>
 #include <fnd/asdxLogger.h>
 #include <fnd/asdxFileIO.h>
+#include <fnd/asdxMisc.h>
 #include <edit/asdxGuiMgr.h>
 
 
 namespace {
 
+static const char* kText[] = {
+    ASDX_U8("かくして、バロン国、飛空艇団"),
+    ASDX_U8("「赤い翼」の部隊長であった"),
+    ASDX_U8("暗黒騎士セシルは"),
+    ASDX_U8("その座を剥奪され"),
+    ASDX_U8("竜騎士部隊長カインと共に"),
+    ASDX_U8("辺境の村、ミストを目指し"),
+    ASDX_U8("切り深く立ち込める谷へと"),
+    ASDX_U8("バロン城を後にした…"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("人々の夢であった"),
+    ASDX_U8("天かける船、飛空艇"),
+    ASDX_U8("…だが、その飛空艇の機動力は"),
+    ASDX_U8("夢の実現ばかりか"),
+    ASDX_U8("欲望を満たす手段にまでなりえた。"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("飛空艇団「赤い翼」により"),
+    ASDX_U8("最強の軍事国家となったバロン国。"),
+    ASDX_U8("なぜ、その強大な力をもつバロンが"),
+    ASDX_U8("クリスタルを求めたのか…"),
+    ASDX_U8("そしてなぜ、あまたの魔物が"),
+    ASDX_U8("白日のもとに"),
+    ASDX_U8("その姿を現し始めたのか…"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("\n"),
+    ASDX_U8("クリスタルはただ静かに"),
+    ASDX_U8("その光をたたえていた…"),
+};
 
 } // namespace
 
@@ -29,7 +69,7 @@ namespace {
 SampleApp::SampleApp()
 : asdx::App(L"Sample", 1920, 1080, nullptr, nullptr, nullptr)
 {
-    m_SwapChainFormat    = DXGI_FORMAT_R8G8B8A8_UNORM;
+    m_SwapChainFormat    = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     m_DepthStencilFormat = DXGI_FORMAT_D32_FLOAT;
 
     m_DeviceDesc.MaxShaderResourceCount = 8192;
@@ -79,7 +119,13 @@ bool SampleApp::OnInit()
     }
     #endif
 
-    if (!m_SpriteRenderer.Init(m_Width, m_Height, UINT16_MAX, UINT16_MAX, m_SwapChainFormat, m_DepthStencilFormat))
+    if (!asdx::TextureManager::Instance().Init())
+    {
+        ELOGA("Error : TextureManager::Init() Failed.");
+        return false;
+    }
+
+    if (!m_SpriteRenderer.Init(m_Width, m_Height, UINT16_MAX, UINT16_MAX, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
     {
         ELOGA("Error : SpriteRenderer::Init() Failed.");
         return false;
@@ -113,6 +159,25 @@ bool SampleApp::OnInit()
         }
     }
 
+    {
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath("../res/texture/sample_bg.txb", path))
+        {
+            ELOGA("Error : File Not Found.");
+            return false;
+        }
+
+        m_TextureBG = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG.IsValid())
+        {
+            ELOGA("Error : TextureManager::GetOrCreate() Failed. path = %s", path.string().c_str());
+            return false;
+        }
+    }
+
+    // 初期値設定.
+    m_PosY = float(m_Height) - 500.0f;
+
     // コマンドの記録を終了.
     pCmd->Close();
 
@@ -145,6 +210,10 @@ void SampleApp::OnTerm()
     m_SpriteRenderer.Term();
     m_MintMono.Term();
 
+    m_TextureBG.Reset();
+
+    asdx::TextureManager::Instance().Term();
+
     #if ASDX_ENABLE_IMGUI
     {
         // GUI終了処理.
@@ -175,6 +244,15 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     m_SpriteRenderer.Reset();
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
+    m_PosY -= float(args.ElapsedTimeSec) * 20.0f;
+
+    auto count = _countof(kText);
+    auto h = m_MintMono.GetBinary().GetLineHeight() * m_MintMono.GetBinary().GetFontSize() * 1.5f;
+    auto y = m_PosY + h * count;
+    if (y < 200.0f)
+    {
+        m_PosY = float(m_Height) - 500.0f;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -206,11 +284,27 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
     {
+        m_SpriteRenderer.SetPipelineState(pCmd);
+        m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), asdx::FontRenderer::Instance().GetSampler().GetHandleGPU());
+        m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
+        m_SpriteRenderer.Draw(pCmd);
+
+        m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
         asdx::FontRenderer::Instance().SetState(pCmd, m_SpriteRenderer, m_MintMono);
         asdx::FontRenderer::Instance().SetScale(1.5f);
         asdx::FontRenderer::Instance().SetEnableOuter(true);
         asdx::FontRenderer::Instance().SetOuterColor(0.0f, 0.0f, 0.0f, 1.0f);
-        asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_MintMono, 10, 10, (char*)u8"これはテストです");
+
+        D3D12_RECT rect = { LONG(100), LONG(200), LONG(m_Width - 100), LONG(m_Height - 500) };
+        pCmd->RSSetScissorRects(1, &rect);
+
+        auto count = _countof(kText);
+        for(auto i=0; i<count; ++i)
+        {
+            auto w = m_MintMono.CalcWidth(kText[i], 1.5f);
+            auto h = m_MintMono.GetBinary().GetLineHeight() * m_MintMono.GetBinary().GetFontSize() * 1.5f;
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_MintMono, (m_Width - w) / 2, int(m_PosY + h * i), kText[i]);
+        }
         m_SpriteRenderer.Draw(pCmd);
     }
 

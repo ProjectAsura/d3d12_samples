@@ -17,6 +17,7 @@
 #include <gfx/asdxCommandQueue.h>
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxFont.h>
+#include <gfx/asdxTextureManager.h>
 
 #if ASDX_ENABLE_SOUND
 #include <fw/asdxSound.h>
@@ -61,6 +62,9 @@ private:
     asdx::WaitPoint         m_FrameWaitPoint;
     asdx::SpriteRenderer    m_SpriteRenderer;
     asdx::Font              m_MintMono;
+    asdx::TextureHolder     m_TextureBG;
+
+    float m_PosY = 0.0f;
 
     //=========================================================================
     // private methods.

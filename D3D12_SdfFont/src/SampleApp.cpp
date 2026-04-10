@@ -119,24 +119,28 @@ bool SampleApp::OnInit()
     }
     #endif
 
+    // テクスチャマネージャの初期化.
     if (!asdx::TextureManager::Instance().Init())
     {
         ELOGA("Error : TextureManager::Init() Failed.");
         return false;
     }
 
+    // スプライトレンダラーの初期化.
     if (!m_SpriteRenderer.Init(m_Width, m_Height, UINT16_MAX, UINT16_MAX, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
     {
         ELOGA("Error : SpriteRenderer::Init() Failed.");
         return false;
     }
 
+    // フォントレンダラーの初期化.
     if (!asdx::FontRenderer::Instance().Init(m_SpriteRenderer))
     {
         ELOGA("Error : FontRenderer::Init() Failed");
         return false;
     }
 
+    // フォントの初期化.
     {
         asdx::fs::path path;
         if (!asdx::SearchFilePath("../res/font/MintMono35-Regular_32.fnb", path))
@@ -159,6 +163,7 @@ bool SampleApp::OnInit()
         }
     }
 
+    // 背景テクスチャの初期化.
     {
         asdx::fs::path path;
         if (!asdx::SearchFilePath("../res/texture/sample_bg.txb", path))
@@ -206,12 +211,19 @@ bool SampleApp::OnInit()
 //-----------------------------------------------------------------------------
 void SampleApp::OnTerm()
 {
+    // フォントレンダラーの終了処理.
     asdx::FontRenderer::Instance().Term();
+
+    // スプライトレンダラーの終了処理.
     m_SpriteRenderer.Term();
+
+    // フォントの解放処理.
     m_MintMono.Term();
 
+    // 背景テクスチャの解放処理.
     m_TextureBG.Reset();
 
+    // テクスチャマネージャの終了処理.
     asdx::TextureManager::Instance().Term();
 
     #if ASDX_ENABLE_IMGUI
@@ -241,14 +253,20 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     }
     #endif
 
+    // フレームリセット.
     m_SpriteRenderer.Reset();
+
+    // スクリーンサイズ設定.
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
+    // 文字列をスクロール.
     m_PosY -= float(args.ElapsedTimeSec) * 20.0f;
 
     auto count = _countof(kText);
     auto h = m_MintMono.GetBinary().GetLineHeight() * m_MintMono.GetBinary().GetFontSize() * 1.5f;
     auto y = m_PosY + h * count;
+
+    // 最後まで表示したらリセット.
     if (y < 200.0f)
     {
         m_PosY = float(m_Height) - 500.0f;
@@ -284,20 +302,23 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
     {
-        m_SpriteRenderer.SetPipelineState(pCmd);
+        // 背景描画.
         m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), asdx::FontRenderer::Instance().GetSampler().GetHandleGPU());
         m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
         m_SpriteRenderer.Draw(pCmd);
 
+        // 文字列描画設定.
         m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-        asdx::FontRenderer::Instance().SetState(pCmd, m_SpriteRenderer, m_MintMono);
+        asdx::FontRenderer::Instance().SetState(m_SpriteRenderer, m_MintMono);
         asdx::FontRenderer::Instance().SetScale(1.5f);
         asdx::FontRenderer::Instance().SetEnableOuter(true);
         asdx::FontRenderer::Instance().SetOuterColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        // シーザー矩形設定.
         D3D12_RECT rect = { LONG(100), LONG(200), LONG(m_Width - 100), LONG(m_Height - 500) };
         pCmd->RSSetScissorRects(1, &rect);
 
+        // テキスト描画.
         auto count = _countof(kText);
         for(auto i=0; i<count; ++i)
         {

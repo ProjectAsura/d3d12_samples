@@ -229,15 +229,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     m_Pad     .UpdateState();
     m_Keyboard.UpdateState();
 
+    // プレイヤーとレーダーの表示サイズ.
     const asdx::Vector2 kPlayerSize(98.0f, 75.0f);
     const asdx::Vector2 kLaserSize(9.0 * 2.0f, 54.0f * 2.0f);
 
+    // 移動スピード設定.
     const auto kMoveSpeedPL    = 500.0f;
     const auto kMoveSpeedBG0   = 350.0f;
     const auto kMoveSpeedBG1   = 800.0f;
     const auto kMoveSpeedBG2   = 100.0f;
     const auto kMoveSpeedLaser = 2400.0f;
 
+    // 背景スクロール処理.
     m_OffsetBG0 += int(args.ElapsedTimeSec * kMoveSpeedBG0);
     m_OffsetBG0 = asdx::Wrap(m_OffsetBG0, 0, int(m_Height));
 
@@ -246,7 +249,6 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     m_OffsetBG2 += int(args.ElapsedTimeSec * kMoveSpeedBG2);
     m_OffsetBG2 = asdx::Wrap(m_OffsetBG2, 0, int(m_Height));
-
 
     // プレイヤー移動制御.
     {
@@ -270,7 +272,6 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             dir.y += 1.0f;
         else
             dir.y -= m_Pad.GetNormalizedThumbLY();
-
 
         m_PlayerPos += dir * float(args.ElapsedTimeSec) * kMoveSpeedPL;
         m_PlayerPos = asdx::Vector2::Clamp(m_PlayerPos, asdx::Vector2(0.0f, 0.0f), asdx::Vector2(m_Width - kPlayerSize.x, m_Height - kPlayerSize.y));
@@ -364,7 +365,6 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
     // スプライト描画.
     {
-        m_SpriteRenderer.SetPipelineState(pCmd);
         m_SpriteRenderer.Draw(pCmd);
     }
 

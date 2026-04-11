@@ -303,6 +303,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
     {
         // 背景描画.
+        pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
         m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), asdx::FontRenderer::Instance().GetSampler().GetHandleGPU());
         m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
         m_SpriteRenderer.Draw(pCmd);

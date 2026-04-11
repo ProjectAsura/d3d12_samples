@@ -365,6 +365,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
     // スプライト描画.
     {
+        pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
         m_SpriteRenderer.Draw(pCmd);
     }
 

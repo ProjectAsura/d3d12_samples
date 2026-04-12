@@ -12,6 +12,7 @@
 #include <fnd/asdxLogger.h>
 #include <fnd/asdxFileIO.h>
 #include <edit/asdxGuiMgr.h>
+#include <gfx/asdxFade.h>
 
 
 namespace {
@@ -79,6 +80,50 @@ bool SampleApp::OnInit()
     }
     #endif
 
+   if (!m_SpriteRenderer.Init(m_Width, m_Height, 4096, 512, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
+    {
+        ELOGA("Error : SpriteRenderer::Init() Failed.");
+        return false;
+    }
+
+    if (!asdx::TextureManager::Instance().Init())
+    {
+        ELOGA("Error : TextureManager::Init() Failed.");
+        return false;
+    }
+
+    {
+        asdx::fs::path input = "../res/textures/Test0.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : File Not Found. path= %s", input.string().c_str());
+            return false;
+        }
+
+        m_TextureBG = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG.IsValid())
+        {
+            ELOGA("Error : Texture Load Failed.");
+            return false;
+        }
+    }
+
+    if (!m_LinearClamp.Init(&asdx::Sampler::LinearClamp))
+    {
+        ELOGA("Error : Sampler::Init() Failed.");
+        return false;
+    }
+
+    if (!asdx::Fade::Instance().Init(pCmd, m_SwapChainFormat))
+    {
+        ELOGA("Error : Fade::Init() Failed.");
+        return false;
+    }
+    asdx::Fade::Instance().SetColor0(asdx::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+    asdx::Fade::Instance().SetColor1(asdx::Vector4(1.0f, 1.0f, 1.0f, 0.0f));
+    asdx::Fade::Instance().SetChangeSec(5.0f);
+
     // コマンドの記録を終了.
     pCmd->Close();
 
@@ -107,9 +152,15 @@ bool SampleApp::OnInit()
 //-----------------------------------------------------------------------------
 void SampleApp::OnTerm()
 {
-    // TODO : Implementation.
-    {
-    }
+    m_TextureBG.Reset();
+
+    asdx::TextureManager::Instance().Term();
+
+    m_SpriteRenderer.Term();
+
+    m_LinearClamp.Term();
+
+    asdx::Fade::Instance().Term();
 
     #if ASDX_ENABLE_IMGUI
     {
@@ -138,9 +189,11 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     }
     #endif
 
-    // TODO : Implementation.
-    {
-    }
+    m_SpriteRenderer.Reset();
+    m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
+    m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+    m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -171,8 +224,25 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetViewports(1, &m_Viewport);
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
-    // TODO : 描画処理.
+    // スプライト描画.
     {
+        pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
+        m_SpriteRenderer.Draw(pCmd);
+    }
+
+    // フェード描画.
+    {
+        asdx::Fade::Instance().Update(float(args.ElapsedTimeSec));
+        asdx::Fade::Instance().Draw(pCmd);
+
+        if (asdx::Fade::Instance().IsComplete())
+        {
+            auto color0 = asdx::Fade::Instance().GetColor0();
+            auto color1 = asdx::Fade::Instance().GetColor1();
+            asdx::Fade::Instance().SetColor0(color1);
+            asdx::Fade::Instance().SetColor1(color0);
+            asdx::Fade::Instance().ResetState();
+        }
     }
 
     #if ASDX_ENABLE_IMGUI

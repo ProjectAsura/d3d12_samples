@@ -199,7 +199,7 @@ bool PrimitiveCulling(float2 posSS[3])
     // 微小プリミティブカリング.
     maxi *= g_TransParam.RenderTargetSize.xy;
     mini *= g_TransParam.RenderTargetSize.xy;
-    culled |= any(round(mini) == round(maxi));  // カリングする.
+    culled |= any((int2)floor(mini + 0.5f.xx) == (int2)floor(maxi + 0.5f.xx));  // カリングする.
 
     return culled;
 }

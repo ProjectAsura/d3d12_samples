@@ -190,36 +190,20 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("カラーフィルタ")))
         {
-            auto saturation = m_ColorFilter.GetSaturation();
-            if (ImGui::DragFloat3(ASDX_U8("彩度"), &saturation.x, 0.1f))
-            { m_ColorFilter.SetSaturation(saturation); }
+            asdx::ColorEffect::Param param = m_ColorFilter.GetParam();
 
-            auto brightness = m_ColorFilter.GetBrightness();
-            if (ImGui::DragFloat(ASDX_U8("明度"), &brightness, 0.01f))
-            { m_ColorFilter.SetBrightness(brightness); }
-
-            auto contrast = m_ColorFilter.GetContrast();
-            if (ImGui::DragFloat(ASDX_U8("コントラスト"), &contrast, 0.01f))
-            { m_ColorFilter.SetContrast(contrast); }
-
-            auto hue = m_ColorFilter.GetHueDegree();
-            if (ImGui::DragFloat(ASDX_U8("色相"), &hue, 0.1f, 0.0f, 360.0f))
-            { m_ColorFilter.SetHueDegree(hue); }
-
-            auto sepiaTone = m_ColorFilter.GetSepiaTone();
-            if (ImGui::DragFloat(ASDX_U8("セピアトーン"), &sepiaTone, 0.01f, 0.0f, 1.0f))
-            { m_ColorFilter.SetSepiaTone(sepiaTone); }
-
-            auto grayScale = m_ColorFilter.GetGrayScale();
-            if (ImGui::DragFloat(ASDX_U8("グレースケール"), &grayScale, 0.01f, 0.0f, 1.0f))
-            { m_ColorFilter.SetGrayScale(grayScale); }
-
-            auto reverse = m_ColorFilter.IsReverse();
-            if (ImGui::Checkbox(ASDX_U8("色反転"), &reverse))
-            { m_ColorFilter.SetReverse(reverse); }
+            ImGui::DragFloat3(ASDX_U8("彩度"), &param.Saturation.x, 0.1f);
+            ImGui::DragFloat(ASDX_U8("明度"), &param.Brightness, 0.01f);
+            ImGui::DragFloat(ASDX_U8("コントラスト"), &param.Contrast, 0.01f);
+            ImGui::DragFloat(ASDX_U8("色相"), &param.HueDegree, 0.1f, 0.0f, 360.0f);
+            ImGui::DragFloat(ASDX_U8("セピアトーン"), &param.SepiaTone, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(ASDX_U8("グレースケール"), &param.GrayScale, 0.01f, 0.0f, 1.0f);
+            ImGui::Checkbox(ASDX_U8("色反転"), &param.Reverse);
 
             if (ImGui::Button(ASDX_U8("リセット")))
-            { m_ColorFilter.ResetValues(); }
+            { param.Reset(); }
+
+            m_ColorFilter.SetParam(param);
 
             ImGui::End();
         }

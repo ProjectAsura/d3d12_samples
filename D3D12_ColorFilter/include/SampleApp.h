@@ -18,7 +18,7 @@
 #include <gfx/asdxTextureManager.h>
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxSampler.h>
-#include <gfx/asdxColorCorrectionEffect.h>
+#include <gfx/asdxColorEffect.h>
 
 #if ASDX_ENABLE_SOUND
 #include <fw/asdxSound.h>
@@ -59,11 +59,11 @@ private:
     //=========================================================================
     // private variables.
     //=========================================================================
-    asdx::AppCamera             m_Camera;
-    asdx::WaitPoint             m_FrameWaitPoint;
-    asdx::TextureHolder         m_TextureBG;
-    asdx::Sampler               m_LinearClamp;
-    asdx::ColorCorrectionEffect m_ColorFilter;
+    asdx::AppCamera     m_Camera;
+    asdx::WaitPoint     m_FrameWaitPoint;
+    asdx::TextureHolder m_TextureBG;
+    asdx::Sampler       m_LinearClamp;
+    asdx::ColorEffect   m_ColorFilter;
 
     //=========================================================================
     // private methods.

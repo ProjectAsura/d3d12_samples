@@ -184,7 +184,7 @@ bool SampleApp::OnInit()
     }
 
     {
-        asdx::fs::path input = "../res/movie/Tutorial1.mp4";
+        asdx::fs::path input = "../res/movie/Tutorial1.webm";
         asdx::fs::path path;
         if (!asdx::SearchFilePath(input, path))
         {
@@ -336,7 +336,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             dir.y -= m_Pad.GetNormalizedThumbLY();
 
         m_PlayerPos += dir * float(args.ElapsedTimeSec) * kMoveSpeedPL;
-        m_PlayerPos = asdx::Vector2::Clamp(m_PlayerPos, asdx::Vector2(m_Width / 2, 0.0f), asdx::Vector2(m_Width - kPlayerSize.x, m_Height - kPlayerSize.y));
+        m_PlayerPos = asdx::Vector2::Clamp(m_PlayerPos, asdx::Vector2(float(m_Width) / 2.0f, 0.0f), asdx::Vector2(m_Width - kPlayerSize.x, m_Height - kPlayerSize.y));
     }
 
     // レーザー移動制御.

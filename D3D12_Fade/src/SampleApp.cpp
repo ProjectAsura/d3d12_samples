@@ -80,18 +80,21 @@ bool SampleApp::OnInit()
     }
     #endif
 
-   if (!m_SpriteRenderer.Init(m_Width, m_Height, 4096, 512, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
+    // スプライトレンダラーを初期化.
+    if (!m_SpriteRenderer.Init(m_Width, m_Height, 4096, 512, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
     {
         ELOGA("Error : SpriteRenderer::Init() Failed.");
         return false;
     }
 
+    // テクスチャマネージャーを初期化.
     if (!asdx::TextureManager::Instance().Init())
     {
         ELOGA("Error : TextureManager::Init() Failed.");
         return false;
     }
 
+    // テクスチャ0を生成.
     {
         asdx::fs::path input = "../res/textures/Test0.txb";
         asdx::fs::path path;
@@ -101,20 +104,40 @@ bool SampleApp::OnInit()
             return false;
         }
 
-        m_TextureBG = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
-        if (!m_TextureBG.IsValid())
+        m_TextureBG0 = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG0.IsValid())
         {
             ELOGA("Error : Texture Load Failed.");
             return false;
         }
     }
 
+    // テクスチャ1を生成.
+    {
+        asdx::fs::path input = "../res/textures/Test1.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : File Not Found. path= %s", input.string().c_str());
+            return false;
+        }
+
+        m_TextureBG1 = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG1.IsValid())
+        {
+            ELOGA("Error : Texture Load Failed.");
+            return false;
+        }
+    }
+
+    // サンプラー初期化.
     if (!m_LinearClamp.Init(&asdx::Sampler::LinearClamp))
     {
         ELOGA("Error : Sampler::Init() Failed.");
         return false;
     }
 
+    // フェード初期化.
     if (!asdx::Fade::Instance().Init(pCmd, m_SwapChainFormat))
     {
         ELOGA("Error : Fade::Init() Failed.");
@@ -123,6 +146,8 @@ bool SampleApp::OnInit()
     asdx::Fade::Instance().SetColor0(asdx::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
     asdx::Fade::Instance().SetColor1(asdx::Vector4(1.0f, 1.0f, 1.0f, 0.0f));
     asdx::Fade::Instance().SetChangeSec(5.0f);
+
+    m_HandleSRV = m_TextureBG0.GetHandleGPU();
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -152,7 +177,8 @@ bool SampleApp::OnInit()
 //-----------------------------------------------------------------------------
 void SampleApp::OnTerm()
 {
-    m_TextureBG.Reset();
+    m_TextureBG0.Reset();
+    m_TextureBG1.Reset();
 
     asdx::TextureManager::Instance().Term();
 
@@ -191,7 +217,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     m_SpriteRenderer.Reset();
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
-    m_SpriteRenderer.SetTexture(m_TextureBG.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
+    m_SpriteRenderer.SetTexture(m_HandleSRV, m_LinearClamp.GetHandleGPU());
     m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
 
 }
@@ -242,6 +268,17 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
             asdx::Fade::Instance().SetColor0(color1);
             asdx::Fade::Instance().SetColor1(color0);
             asdx::Fade::Instance().ResetState();
+
+            // 画像を変更.
+            m_Index++;
+            if (m_Index % 2 == 0)
+            {
+                auto index = (m_Index / 2) % 2;
+                if (index == 0)
+                { m_HandleSRV = m_TextureBG0.GetHandleGPU(); }
+                else
+                { m_HandleSRV = m_TextureBG1.GetHandleGPU(); }
+            }
         }
     }
 

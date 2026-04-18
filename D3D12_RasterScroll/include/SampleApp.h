@@ -60,16 +60,18 @@ private:
     //=========================================================================
     asdx::AppCamera         m_Camera;
     asdx::WaitPoint         m_FrameWaitPoint;
-    asdx::TextureHolder     m_TextureBG;
+    asdx::TextureHolder     m_TextureBG0;
+    asdx::TextureHolder     m_TextureBG1;
 
     asdx::RefPtr<ID3D12RootSignature> m_RootSignature;
     asdx::RefPtr<ID3D12PipelineState> m_PipelineState;
 
+    D3D12_GPU_DESCRIPTOR_HANDLE m_HandleSRV = {};
+    uint8_t                     m_Index     = 0;
+
     asdx::Vector2 m_ScrollOffset;
     asdx::Vector2 m_ScrollScale;
-    int           m_Counter = 0;
-    bool          m_OnChange = false;
-    bool          m_IsFinished = false;
+    int           m_Counter     = 0;
 
     //=========================================================================
     // private methods.

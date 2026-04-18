@@ -60,9 +60,12 @@ private:
     //=========================================================================
     asdx::AppCamera         m_Camera;
     asdx::WaitPoint         m_FrameWaitPoint;
-    asdx::TextureHolder     m_TextureBG;
+    asdx::TextureHolder     m_TextureBG0;
+    asdx::TextureHolder     m_TextureBG1;
     asdx::SpriteRenderer    m_SpriteRenderer;
     asdx::Sampler           m_LinearClamp;
+    D3D12_GPU_DESCRIPTOR_HANDLE m_HandleSRV = {};
+    int                         m_Index = 0;
 
     //=========================================================================
     // private methods.

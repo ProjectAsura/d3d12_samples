@@ -110,8 +110,26 @@ bool SampleApp::OnInit()
             return false;
         }
 
-        m_TextureBG = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
-        if (!m_TextureBG.IsValid())
+        m_TextureBG0 = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG0.IsValid())
+        {
+            ELOGA("Error : Texture Load Failed.");
+            return false;
+        }
+    }
+
+    // テクスチャ生成.
+    {
+        asdx::fs::path input = "../res/textures/Test1.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : File Not Found. path= %s", input.string().c_str());
+            return false;
+        }
+
+        m_TextureBG1 = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_TextureBG1.IsValid())
         {
             ELOGA("Error : Texture Load Failed.");
             return false;
@@ -197,6 +215,8 @@ bool SampleApp::OnInit()
         }
     }
 
+    m_HandleSRV = m_TextureBG0.GetHandleGPU();
+
     // コマンドの記録を終了.
     pCmd->Close();
 
@@ -225,7 +245,8 @@ bool SampleApp::OnInit()
 //-----------------------------------------------------------------------------
 void SampleApp::OnTerm()
 {
-    m_TextureBG.Reset();
+    m_TextureBG0.Reset();
+    m_TextureBG1.Reset();
 
     asdx::TextureManager::Instance().Term();
 
@@ -271,6 +292,26 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     m_ScrollScale.x = 1.0f;
     m_ScrollScale.y = (0.5f - move * 0.5f) * kAmplitude;
     m_Counter++;
+
+    auto period = int(1.0 / double(kSpeed));
+    auto change = false;
+    if (m_Counter == period / 2)
+    {
+        change = true;
+    }
+    else if (m_Counter == period)
+    {
+        m_Counter = 0;
+    }
+
+    if (change)
+    {
+        m_Index = (m_Index + 1) & 0x1;
+        if (m_Index == 0)
+        { m_HandleSRV = m_TextureBG0.GetHandleGPU(); }
+        else if (m_Index == 1)
+        { m_HandleSRV = m_TextureBG1.GetHandleGPU(); }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -310,7 +351,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         pCmd->SetGraphicsRootSignature(m_RootSignature.GetPtr());
         pCmd->SetPipelineState(m_PipelineState.GetPtr());
         pCmd->SetGraphicsRoot32BitConstants(0, 4, &param, 0);
-        pCmd->SetGraphicsRootDescriptorTable(1, m_TextureBG.GetHandleGPU());
+        pCmd->SetGraphicsRootDescriptorTable(1, m_HandleSRV);
         asdx::DrawQuad(pCmd);
     }
 

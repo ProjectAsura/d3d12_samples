@@ -16,6 +16,7 @@
 #include <gfx/asdxTextureManager.h>
 #include <gfx/asdxTarget.h>
 #include "SpriteData.h"
+#include "Entity.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,6 +63,7 @@ private:
     int                     m_OffsetBG0 = 0;
     int                     m_OffsetBG1 = 0;
     int                     m_OffsetBG2 = 0;
+    Entity                  m_PlayerEntity;
 
     //=========================================================================
     // private methods.

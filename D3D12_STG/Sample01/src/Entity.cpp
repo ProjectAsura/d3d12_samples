@@ -122,12 +122,18 @@ void Entity::Draw(asdx::SpriteRenderer& renderer)
 //-----------------------------------------------------------------------------
 //      交差判定を行います.
 //-----------------------------------------------------------------------------
-bool Entity::IsHit(const asdx::Vector2& pos, const asdx::Int2& size)
+bool Entity::IsHit(const asdx::Vector2& pos, const asdx::Int2& size) const
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
     return !((m_Pos.x + float(data.W)) <= pos.x || (pos.x + float(size.x)) <= m_Pos.x ||
              (m_Pos.y + float(data.H)) <= pos.y || (pos.y + float(size.y)) <= m_Pos.y);
 }
+
+//-----------------------------------------------------------------------------
+//      交差判定を行います.
+//-----------------------------------------------------------------------------
+bool Entity::IsHit(const Entity& target) const
+{ return IsHit(target.GetPos(), target.GetSize()); }
 
 //-----------------------------------------------------------------------------
 //      画面外かどうか判定します.

@@ -218,3 +218,22 @@ bool BulletManager::IsHit(const Entity& entity)
 
     return hit;
 }
+
+namespace {
+
+static BulletManager g_PlayerBulletMgr;     //!< プレイヤー用弾マネージャ.
+static BulletManager g_EnemyBulletMgr;      //!< エネミー用弾マネージャ.
+
+} // namespace
+
+//-----------------------------------------------------------------------------
+//      プレイヤー用弾マネージャを取得します.
+//-----------------------------------------------------------------------------
+BulletManager& GetPlayerBulletMgr()
+{ return g_PlayerBulletMgr; }
+
+//-----------------------------------------------------------------------------
+//      エネミー用弾マネージャを取得します.
+//-----------------------------------------------------------------------------
+BulletManager& GetEnemyBulletMgr()
+{ return g_EnemyBulletMgr; }

@@ -85,12 +85,14 @@
     <ClCompile Include="..\src\Entity.cpp" />
     <ClCompile Include="..\src\GameApp.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\Player.cpp" />
     <ClCompile Include="..\src\SpriteData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Bullet.h" />
     <ClInclude Include="..\include\Entity.h" />
     <ClInclude Include="..\include\GameApp.h" />
+    <ClInclude Include="..\include\Player.h" />
     <ClInclude Include="..\include\SpriteData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

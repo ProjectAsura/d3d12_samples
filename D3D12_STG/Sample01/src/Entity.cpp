@@ -141,9 +141,6 @@ bool Entity::IsHit(const Entity& target) const
 bool Entity::IsOutOfScreen(uint32_t w, uint32_t h)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    if ((m_Pos.x + float(data.W)) < 0 || m_Pos.x > float(w)
-     || (m_Pos.y + float(data.H)) < 0 || m_Pos.y > float(h))
-    { return true; }
-
-    return false;
+    return ((m_Pos.x + float(data.W)) < 0 || m_Pos.x > float(w)
+         || (m_Pos.y + float(data.H)) < 0 || m_Pos.y > float(h));
 }

@@ -17,6 +17,7 @@
 #include <gfx/asdxTarget.h>
 #include "SpriteData.h"
 #include "Entity.h"
+#include "Player.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,7 +64,7 @@ private:
     int                     m_OffsetBG0 = 0;
     int                     m_OffsetBG1 = 0;
     int                     m_OffsetBG2 = 0;
-    Entity                  m_PlayerEntity;
+    Player                  m_Player;
 
     //=========================================================================
     // private methods.
@@ -134,3 +135,4 @@ private:
     //-------------------------------------------------------------------------
     void OnMsgProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) override;
 };
+

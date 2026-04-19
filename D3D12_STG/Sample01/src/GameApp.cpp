@@ -12,6 +12,7 @@
 #include <fnd/asdxPath.h>
 #include <fnd/asdxMisc.h>
 #include <fw/asdxSound.h>
+#include "Bullet.h"
 
 #if ASDX_DEBUG
 #include <edit/asdxGuiMgr.h>
@@ -156,6 +157,24 @@ bool GameApp::OnInit()
         return false;
     }
 
+    // プレイヤー用弾マネージャの初期化.
+    if (!GetPlayerBulletMgr().Init(256))
+    {
+        ELOGA("Error : Player Bullet Manager Initialize Failed.");
+        return false;
+    }
+
+    // プレイヤー用弾マネージャの初期アk処理.
+    if (!GetEnemyBulletMgr().Init(8192))
+    {
+        ELOGA("Error : Enemy Bullet Manager Initialize Failed.");
+        return false;
+    }
+
+    // プレイヤー初期化.
+    m_Player.Init(0u, PLAYER_SHIP2_BLUE, m_Width * 0.5f, m_Height * 0.5f);
+    m_Player.SetPadLock(false);
+
     // コマンドの記録を終了.
     pCmd->Close();
 
@@ -184,6 +203,8 @@ bool GameApp::OnInit()
 //-----------------------------------------------------------------------------
 void GameApp::OnTerm()
 {
+    m_Player.Term();
+
     m_SpriteChip.Reset();
     m_TextureBG .Reset();
 
@@ -193,6 +214,9 @@ void GameApp::OnTerm()
     m_SpriteRenderer.Term();
 
     asdx::TextureManager::Instance().Term();
+
+    GetPlayerBulletMgr().Term();
+    GetEnemyBulletMgr ().Term();
 
     // サウンドマネージャの終了処理.
     asdx::TermSoundMgr();
@@ -254,6 +278,15 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     // スプライトチップ設定.
     m_SpriteRenderer.SetTexture(m_SpriteChip.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
 
+    // 弾制御.
+    GetEnemyBulletMgr ().Update(m_Width, m_Height);
+    GetPlayerBulletMgr().Update(m_Width, m_Height);
+    GetEnemyBulletMgr ().Draw(m_SpriteRenderer);
+    GetPlayerBulletMgr().Draw(m_SpriteRenderer);
+
+    // プレイヤー制御.
+    m_Player.Update(m_Width, m_Height);
+    m_Player.Draw(m_SpriteRenderer);
 }
 
 //-----------------------------------------------------------------------------

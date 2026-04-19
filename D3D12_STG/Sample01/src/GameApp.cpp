@@ -251,11 +251,9 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     m_SpriteRenderer.Add(0, m_OffsetBG2, m_Width, m_Height);
     m_SpriteRenderer.Add(0, m_OffsetBG2 - m_Height, m_Width, m_Height);
 
-
     // スプライトチップ設定.
     m_SpriteRenderer.SetTexture(m_SpriteChip.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
 
-    DrawSprite(PLAYER_SHIP2_BLUE, m_Width / 2, m_Height / 2);
 }
 
 //-----------------------------------------------------------------------------
@@ -410,22 +408,4 @@ void GameApp::OnMsgProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
     default:
         break;
     }
-}
-
-//-----------------------------------------------------------------------------
-//      指定された点が左上になるようにスプライトを描画します.
-//-----------------------------------------------------------------------------
-void GameApp::DrawSprite(SpriteKind kind, int x, int y)
-{
-    const auto& data = GetSpriteData(kind);
-    m_SpriteRenderer.Add(x, y, data.W, data.H, data.uv0, data.uv1);
-}
-
-//-----------------------------------------------------------------------------
-//      指定された点が中心になるようにスプライトを描画します.
-//-----------------------------------------------------------------------------
-void GameApp::DrawSpriteCenter(SpriteKind kind, int x, int y)
-{
-    const auto& data = GetSpriteData(kind);
-    m_SpriteRenderer.Add(x - data.W / 2, y - data.H, data.W, data.H, data.uv0, data.uv1);
 }

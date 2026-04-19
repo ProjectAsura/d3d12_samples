@@ -81,11 +81,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Bullet.cpp" />
+    <ClCompile Include="..\src\Entity.cpp" />
     <ClCompile Include="..\src\GameApp.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\SpriteData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\Bullet.h" />
+    <ClInclude Include="..\include\Entity.h" />
     <ClInclude Include="..\include\GameApp.h" />
     <ClInclude Include="..\include\SpriteData.h" />
   </ItemGroup>

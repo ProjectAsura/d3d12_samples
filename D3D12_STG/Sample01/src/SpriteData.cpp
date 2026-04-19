@@ -12,12 +12,16 @@
 
 namespace {
 
-constexpr int kSpriteChipW = 1024;
-constexpr int kSpriteChipH = 1024;
+constexpr int kSpriteChipW = 1024;  //!< スプライトチップの横幅.
+constexpr int kSpriteChipH = 1024;  //!< スプライトチップの縦幅.
 
+// テクスチャ座標を計算.
 #define UV(x, y) asdx::Vector2(float(x)/float(kSpriteChipW), float(y)/float(kSpriteChipH))
+
+// スプライトデータ
 #define SPRITE_ENTRY(tag, x, y, w, h) { x, y, w, h, UV(x, y+h), UV(x+w, y) }
 
+// 各スプライトデータの定義.
 static const SpriteData kSpriteData[] = {
     SPRITE_ENTRY(beam0 ,143 ,377 ,43 ,31), // BEAM0
     SPRITE_ENTRY(beam1 ,327 ,644 ,40 ,20), // BEAM1

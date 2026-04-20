@@ -11,6 +11,7 @@
 #include <fnd/asdxLogger.h>
 #include <fnd/asdxPath.h>
 #include <fnd/asdxMisc.h>
+#include <fnd/asdxFileIO.h>
 #include <fw/asdxSound.h>
 #include "Bullet.h"
 
@@ -157,6 +158,36 @@ bool GameApp::OnInit()
         return false;
     }
 
+    // フォントレンダラーの初期化.
+    if (!asdx::FontRenderer::Instance().Init(m_SpriteRenderer))
+    {
+        ELOGA("Error : FontRenderer::Init() Failed");
+        return false;
+    }
+
+    // フォントの初期化.
+    {
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath("../res/fonts/MintMono35-Regular_32.fnb", path))
+        {
+            ELOGA("Error : File Not Found.");
+            return false;
+        }
+
+        std::vector<uint8_t> binary;
+        if (!asdx::LoadA(path.string().c_str(), binary))
+        {
+            ELOGA("Error : File Load Failed. path = %s", path.string().c_str());
+            return false;
+        }
+
+        if (!m_Font.Init(pCmd, std::move(binary)))
+        {
+            ELOGA("Error : Font::Init() Failed.");
+            return false;
+        }
+    }
+
     // プレイヤー用弾マネージャの初期化.
     if (!GetPlayerBulletMgr().Init(256))
     {
@@ -172,8 +203,19 @@ bool GameApp::OnInit()
     }
 
     // プレイヤー初期化.
-    m_Player.Init(0u, PLAYER_SHIP2_BLUE, m_Width * 0.5f, m_Height * 0.5f);
-    m_Player.SetPadLock(false);
+    {
+        auto& data = GetSpriteData(PLAYER_SHIP2_BLUE);
+        m_Player.Init(0u, PLAYER_SHIP2_BLUE, m_Width * 0.5f - data.W * 0.5f, m_Height - data.H);
+        m_Player.SetPadLock(false);
+    }
+
+    // エネミー初期化.
+    {
+        auto& data = GetSpriteData(ENEMY_BLACK1);
+        m_Enemy0 = Entity(ENEMY_BLACK1, m_Width * 0.5f - data.W * 0.5f, 0.0f);
+        m_Enemy1 = Entity(ENEMY_BLACK1, 0.0f, 200.0f);
+        m_Enemy2 = Entity(ENEMY_BLACK1, 0.0f, 400.0f);
+    }
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -217,6 +259,8 @@ void GameApp::OnTerm()
 
     GetPlayerBulletMgr().Term();
     GetEnemyBulletMgr ().Term();
+
+    m_Font.Term();
 
     // サウンドマネージャの終了処理.
     asdx::TermSoundMgr();
@@ -278,6 +322,31 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     // スプライトチップ設定.
     m_SpriteRenderer.SetTexture(m_SpriteChip.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
 
+    bool hit0 = false;
+    bool hit1 = false;
+    bool hit2 = false;
+    {
+        m_Rad += args.ElapsedTimeSec * 0.5f;
+        if (m_Rad >= asdx::F_2PI)
+        { m_Rad = 0.0f; }
+
+        // 敵0
+        m_Enemy0.Draw(m_SpriteRenderer);
+        hit0 = GetPlayerBulletMgr().IsHit(m_Enemy0);
+
+        // 敵1
+        auto pos0 = (cosf(m_Rad) * 0.5f + 0.5f) * m_Width;
+        m_Enemy1.SetPosX(pos0);
+        m_Enemy1.Draw(m_SpriteRenderer);
+        hit1 = GetPlayerBulletMgr().IsHit(m_Enemy1);
+
+        // 敵2
+        auto pos1 = (sin(m_Rad * 2.0f) * 0.5f + 0.5f) * m_Width;
+        m_Enemy2.SetPosX(pos1);
+        m_Enemy2.Draw(m_SpriteRenderer);
+        hit2 = GetPlayerBulletMgr().IsHit(m_Enemy2);
+    }
+
     // 弾制御.
     GetEnemyBulletMgr ().Update(m_Width, m_Height);
     GetPlayerBulletMgr().Update(m_Width, m_Height);
@@ -287,6 +356,25 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     // プレイヤー制御.
     m_Player.Update(m_Width, m_Height);
     m_Player.Draw(m_SpriteRenderer);
+
+    if (hit0 || hit1 || hit2)
+    {
+        // 文字列描画設定.
+        m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        asdx::FontRenderer::Instance().SetState(m_SpriteRenderer, m_Font);
+        asdx::FontRenderer::Instance().SetScale(1.5f);
+        asdx::FontRenderer::Instance().SetEnableOuter(true);
+        asdx::FontRenderer::Instance().SetOuterColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+        if (hit0)
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy0.GetPosX() + 80.0f, m_Enemy0.GetPosY() + 80.0f, u8"Hit!");
+
+        if (hit1)
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy1.GetPosX() + 80.0f, m_Enemy1.GetPosY() + 80.0f, u8"Hit!");
+
+        if (hit2)
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy2.GetPosX() + 80.0f, m_Enemy2.GetPosY() + 80.0f, u8"Hit!");
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -333,7 +421,7 @@ void GameApp::OnFrameRender(const base::FrameEventArgs& args)
         pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
         pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
-        m_SpriteRenderer.SetTexture(m_OffScreen.GetGpuHandleSRV(), m_LinearClamp.GetHandleGPU());
+        m_SpriteRenderer.ChangeBatch(m_SpriteRenderer.GetDefaultState(), m_OffScreen.GetGpuHandleSRV(), m_LinearClamp.GetHandleGPU());
         m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
         m_SpriteRenderer.Draw(pCmd);
 

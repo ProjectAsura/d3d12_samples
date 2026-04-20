@@ -15,6 +15,7 @@
 #include <gfx/asdxSampler.h>
 #include <gfx/asdxTextureManager.h>
 #include <gfx/asdxTarget.h>
+#include <gfx/asdxFont.h>
 #include "SpriteData.h"
 #include "Entity.h"
 #include "Player.h"
@@ -65,6 +66,11 @@ private:
     int                     m_OffsetBG1 = 0;
     int                     m_OffsetBG2 = 0;
     Player                  m_Player;
+    asdx::Font              m_Font;
+    Entity                  m_Enemy0;
+    Entity                  m_Enemy1;
+    Entity                  m_Enemy2;
+    float                   m_Rad = 0.0f;
 
     //=========================================================================
     // private methods.

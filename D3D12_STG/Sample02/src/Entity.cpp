@@ -25,18 +25,39 @@ Entity::Entity()
 //-----------------------------------------------------------------------------
 //      引数付きコンストラクタです.
 //-----------------------------------------------------------------------------
-Entity::Entity(uint16_t kind, float x, float y)
+Entity::Entity(uint16_t kind, float x, float y, bool center)
 : m_Kind(kind)
-, m_Pos(x, y)
-{ /* DO_NOTHING */ }
+{
+    if (center)
+    {
+        const auto& data = GetSpriteData(SpriteKind(kind));
+        m_Pos.x = x - data.W * 0.5f;
+        m_Pos.y = y - data.H * 0.5f;
+    }
+    else
+    {
+        m_Pos.x = x;
+        m_Pos.y = y;
+    }
+}
 
 //-----------------------------------------------------------------------------
 //      引数付きコンストラクタです.
 //-----------------------------------------------------------------------------
-Entity::Entity(uint16_t kind, const asdx::Vector2& pos)
+Entity::Entity(uint16_t kind, const asdx::Vector2& pos, bool center)
 : m_Kind(kind)
-, m_Pos(pos)
-{ /* DO_NOTHING */ }
+{
+    if (center)
+    {
+        const auto& data = GetSpriteData(SpriteKind(kind));
+        m_Pos.x = pos.x - data.W * 0.5f;
+        m_Pos.y = pos.y - data.H * 0.5f;
+    }
+    else
+    {
+        m_Pos = pos;
+    }
+}
 
 //-----------------------------------------------------------------------------
 //      デストラクタです.
@@ -78,6 +99,44 @@ void Entity::SetPosY(float value)
 { m_Pos.y = value; }
 
 //-----------------------------------------------------------------------------
+//      指定された点が中心になるように位置座標を設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetCenter(const asdx::Vector2& value)
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    m_Pos.x = value.x - data.W * 0.5f;
+    m_Pos.y = value.y - data.H * 0.5f;
+}
+
+//-----------------------------------------------------------------------------
+//      指定された点が中心になるように位置座標を設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetCenter(float x, float y)
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    m_Pos.x = x - data.W * 0.5f;
+    m_Pos.y = y - data.H * 0.5f;
+}
+
+//-----------------------------------------------------------------------------
+//      指定された点がX方向の中心になるように位置座標を設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetCenterX(float value)
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    m_Pos.x = value - data.W * 0.5f;
+}
+
+//-----------------------------------------------------------------------------
+//      指定された点がY方向の中心になるように位置座標を設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetCenterY(float value)
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    m_Pos.y = value - data.H * 0.5f;
+}
+
+//-----------------------------------------------------------------------------
 //      スプライト種別を取得します.
 //-----------------------------------------------------------------------------
 uint16_t Entity::GetKind() const
@@ -100,6 +159,36 @@ float Entity::GetPosX() const
 //-----------------------------------------------------------------------------
 float Entity::GetPosY() const
 { return m_Pos.y; }
+
+//-----------------------------------------------------------------------------
+//      中心座標を取得します.
+//-----------------------------------------------------------------------------
+asdx::Vector2 Entity::GetCenter() const
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    asdx::Vector2 result;
+    result.x = m_Pos.x + data.W * 0.5f;
+    result.y = m_Pos.y + data.H * 0.5f;
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+//      中心座標のX成分を取得します.
+//-----------------------------------------------------------------------------
+float Entity::GetCenterX() const
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    return m_Pos.x + data.W * 0.5f;
+}
+
+//-----------------------------------------------------------------------------
+//      中心座標のY成分を取得します.
+//-----------------------------------------------------------------------------
+float Entity::GetCenterY() const
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    return m_Pos.y + data.H * 0.5f;
+}
 
 //-----------------------------------------------------------------------------
 //      スプライトサイズを取得します.

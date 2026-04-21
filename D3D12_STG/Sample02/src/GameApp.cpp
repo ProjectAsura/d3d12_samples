@@ -14,6 +14,8 @@
 #include <fnd/asdxFileIO.h>
 #include <fw/asdxSound.h>
 #include "Bullet.h"
+#include "Enemy.h"
+#include "ShotBehavior.h"
 
 #if ASDX_DEBUG
 #include <edit/asdxGuiMgr.h>
@@ -204,17 +206,22 @@ bool GameApp::OnInit()
 
     // プレイヤー初期化.
     {
-        auto& data = GetSpriteData(PLAYER_SHIP2_BLUE);
-        m_Player.Init(0u, PLAYER_SHIP2_BLUE, m_Width * 0.5f - data.W * 0.5f, m_Height - data.H);
-        m_Player.SetPadLock(false);
+        auto& player0 = GetPlayer(0);
+        player0.Init(0u, m_Width * 0.5f, float(m_Height), true);
+        player0.SetPadLock(false);
     }
 
-    // エネミー初期化.
-    {
-        auto& data = GetSpriteData(ENEMY_BLACK1);
-        m_Enemy = Entity(ENEMY_BLACK1, m_Width * 0.5f - data.W * 0.5f, 0.0f);
 
-        // LASER_RED08を敵の弾として利用.
+    {
+        EnemyManager::SpawnParam param;
+        param.ShipKind              = ENEMY_BLACK1;
+        param.ShotBehavior          = DirectionalShot;
+        param.InitShotParam.Angle   = 90.0f;
+        param.InitShotParam.Speed   = 0.1f;
+
+        auto& enemyMgr = GetEnemyMgr();
+        enemyMgr.AddType(0, param);
+        enemyMgr.Spwan(0, m_Width * 0.5f, 100.0f);
     }
 
     // コマンドの記録を終了.
@@ -245,8 +252,6 @@ bool GameApp::OnInit()
 //-----------------------------------------------------------------------------
 void GameApp::OnTerm()
 {
-    m_Player.Term();
-
     m_SpriteChip.Reset();
     m_TextureBG .Reset();
 
@@ -332,9 +337,12 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     GetEnemyBulletMgr ().Draw(m_SpriteRenderer);
     GetPlayerBulletMgr().Draw(m_SpriteRenderer);
 
+    GetEnemyMgr().Draw(m_SpriteRenderer);
+
     // プレイヤー制御.
-    m_Player.Update(m_Width, m_Height);
-    m_Player.Draw(m_SpriteRenderer);
+    auto& player0 = GetPlayer(0);
+    player0.Update(m_Width, m_Height);
+    player0.Draw(m_SpriteRenderer);
 }
 
 //-----------------------------------------------------------------------------

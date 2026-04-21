@@ -13,30 +13,11 @@
 #include <fnd/asdxList.h>
 
 
-///////////////////////////////////////////////////////////////////////////////
-// EnemyParam structure
-///////////////////////////////////////////////////////////////////////////////
-struct EnemyParam
-{
-    float   ShotAngle       = 0.0f;     //!< 発射角度.
-    float   ShotAngleRange  = 0.0f;     //!< 発射角度範囲.
-    float   ShotSpeed       = 0.0f;     //!< 発射速度.
-    int     ShotCount       = 0;        //!< 発射数.
-    int     ShotInterval    = 0;        //!< 発射間隔.
-    int     ShotWait        = 0;        //!< 発射待機時間
-    int     ShotTimer       = 0;        //!< 発射用タイマー.
-    float   BulletAngleRate = 0.0f;     //!< 弾の角度速度.
-    float   BulletSpeedRate = 0.0f;     //!< 弾の加速度.
-    int     MoveTimer       = 0;        //!< 移動用タイマー. 
-};
-
 //-----------------------------------------------------------------------------
-//! @brief      敵の挙動関数.
-//! 
-//! @param[in, out]     pos         自身の位置座標.
-//! @param[in, out]     param       敵パラメータ.
+// Forward Declarations.
 //-----------------------------------------------------------------------------
-using EnemyBehavior = void(*)(asdx::Vector2& pos, EnemyParam& param);
+class Enemy;
+using EnemyBehavior = void(*)(Enemy&);  // 挙動処理.
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,6 +31,31 @@ class Enemy : public Entity, public asdx::List<Enemy>::Node
     /* NOTHING */
 
 public:
+    ///////////////////////////////////////////////////////////////////////////
+    // ShotParam structure
+    ///////////////////////////////////////////////////////////////////////////
+    struct ShotParam
+    {
+        uint16_t    Kind            = 0;        //!< スプライト種別.
+        float       Angle           = 0.0f;     //!< 発射角度.
+        float       AngleRange      = 0.0f;     //!< 発射角度範囲.
+        float       AngleRate       = 0.0f;     //!< 弾の角度速度.
+        float       Speed           = 0.0f;     //!< 発射速度.
+        float       SpeedRate       = 0.0f;     //!< 弾の加速度.
+        int         Count           = 0;        //!< 発射数.
+        int         Interval        = 0;        //!< 発射間隔.
+        int         Wait            = 0;        //!< 発射待機時間
+        int         Timer           = 0;        //!< タイマー.
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    // MoveParam structure
+    ///////////////////////////////////////////////////////////////////////////
+    struct MoveParam
+    {
+        int Timer = 0;  //!< タイマー. 
+    };
+
     //=========================================================================
     // public variables.
     //=========================================================================
@@ -82,23 +88,38 @@ public:
         uint16_t            kind,
         float               x,
         float               y,
-        const EnemyParam&   param,
+        const ShotParam&    shotParam,
+        const MoveParam&    moveParam,
         EnemyBehavior       shotBehavior,
         EnemyBehavior       moveBehaior);
 
     //-------------------------------------------------------------------------
-    //! @brief      制御パラメータを設定します
+    //! @brief      発弾パラメータを設定します
     //! 
     //! @param[in]      value       設定するパラメータ.
     //-------------------------------------------------------------------------
-    void SetParam(const EnemyParam& value);
+    void SetShotParam(const ShotParam& value);
 
     //-------------------------------------------------------------------------
-    //! @brief      制御パラメータを取得します.
+    //! @brief      移動パラメータを設定します.
     //! 
-    //! @return     制御パラメータを返却します.
+    //! @param[in]      value       設定するパラメータ.
     //-------------------------------------------------------------------------
-    const EnemyParam& GetParam() const;
+    void SetMoveParam(const MoveParam& value);
+
+    //-------------------------------------------------------------------------
+    //! @brief      発弾パラメータを取得します.
+    //! 
+    //! @return     発弾パラメータを返却します.
+    //-------------------------------------------------------------------------
+    const ShotParam& GetShotParam() const;
+
+    //-------------------------------------------------------------------------
+    //! @brief      移動パラメータを取得します.
+    //! 
+    //! @return     移動パラメータを返却します.
+    //-------------------------------------------------------------------------
+    const MoveParam& GetMoveParam() const;
 
     //-------------------------------------------------------------------------
     //! @brief      発弾挙動を設定します.
@@ -123,7 +144,8 @@ private:
     //=========================================================================
     // private variables.
     //=========================================================================
-    EnemyParam      m_Param         = {};
+    ShotParam       m_ShotParam     = {};
+    MoveParam       m_MoveParam     = {};
     EnemyBehavior   m_ShotBehavior  = nullptr;
     EnemyBehavior   m_MoveBehavior  = nullptr;
 
@@ -150,10 +172,11 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     struct SpawnParam
     {
-        uint16_t        Kind;           //!< スプライト種別.
-        EnemyParam      Param;          //!< 制御パラメータ.
-        EnemyBehavior   ShotBehavior;   //!< 発弾挙動.
-        EnemyBehavior   MoveBehavior;   //!< 移動挙動.
+        uint16_t            ShipKind;       //!< スプライト種別.
+        Enemy::ShotParam    InitShotParam;  //!< 発弾初期パラメータ.
+        Enemy::MoveParam    InitMoveParam;  //!< 移動初期パラメータ.
+        EnemyBehavior       ShotBehavior;   //!< 発弾挙動.
+        EnemyBehavior       MoveBehavior;   //!< 移動挙動.
     };
 
     //=========================================================================
@@ -249,7 +272,7 @@ private:
     asdx::List<Enemy>   m_FreeList;             //!< 未使用リスト.
     asdx::List<Enemy>   m_UsedList;             //!< 使用中リスト.
 
-    std::unordered_map<uint32_t, SpawnParam> m_Types;
+    std::unordered_map<uint32_t, SpawnParam> m_Types;   //!< 敵タイプリスト.
 
     //=========================================================================
     // private methods.
@@ -260,4 +283,4 @@ private:
 //-----------------------------------------------------------------------------
 //! @brief      敵マネージャを取得します.
 //-----------------------------------------------------------------------------
-EnemyManager& GetEnemyManager();
+EnemyManager& GetEnemyMgr();

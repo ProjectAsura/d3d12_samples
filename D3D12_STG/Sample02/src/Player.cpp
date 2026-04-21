@@ -17,11 +17,23 @@ namespace {
 //-----------------------------------------------------------------------------
 // Constants.
 //-----------------------------------------------------------------------------
-constexpr uint8_t kDefaultLife      = 3;        //!< 残機数のデフォルト値.
-constexpr float   kDefaultMoveSpeed = 3.0f;     //!< プレイヤー移動速度のデフォルト値.
-constexpr float   kShotSpeed        = 25.0f;
+constexpr uint8_t   kDefaultLife      = 3;        //!< 残機数のデフォルト値.
+constexpr float     kDefaultMoveSpeed = 3.0f;     //!< プレイヤー移動速度のデフォルト値.
+constexpr float     kShotSpeed        = 25.0f;    //!< 弾の速さ.
+constexpr uint32_t  kMaxPlayerCount   = 3;        //!< 最大プレイヤー数.
 
 constexpr asdx::PAD_BUTTON kShotButton = asdx::PAD_B;
+SpriteKind kPlayerShip[kMaxPlayerCount] = {
+    PLAYER_SHIP2_BLUE,
+    PLAYER_SHIP2_GREEN,
+    PLAYER_SHIP2_RED,
+};
+
+SpriteKind kLaser[kMaxPlayerCount] = {
+    LASER_BLUE01,
+    LASER_GREEN01,
+    LASER_RED01,
+};
 
 } // namespace
 
@@ -45,11 +57,17 @@ Player::~Player()
 //-----------------------------------------------------------------------------
 //      初期化処理を行います.
 //-----------------------------------------------------------------------------
-void Player::Init(uint32_t playerIndex, uint16_t kind, float px, float py)
+void Player::Init(uint32_t playerIndex, float px, float py, bool center)
 {
+    assert(playerIndex < kMaxPlayerCount);
     m_Pad.SetPlayerIndex(playerIndex);
-    SetKind(kind);
-    SetPos(px, py);
+
+    SetKind(kPlayerShip[playerIndex]);
+
+    if (center)
+    { SetCenter(px, py); }
+    else
+    { SetPos(px, py); }
 
     m_Life      = kDefaultLife;
     m_MoveSpeed = kDefaultMoveSpeed;
@@ -70,9 +88,12 @@ void Player::Term()
 //-----------------------------------------------------------------------------
 void Player::Update(uint32_t w, uint32_t h)
 {
+    // プレイヤー番号取得.
+    auto idx = m_Pad.GetPlayerIndex();
+
     asdx::Vector2 pos = GetPos();
-    auto& data = GetSpriteData(SpriteKind(GetKind()));
-    auto center = asdx::Vector2(pos.x + data.W * 0.5f, pos.y + data.H * 0.5f);
+    const auto& shipData = GetSpriteData(kPlayerShip[idx]);
+    auto center = asdx::Vector2(pos.x + shipData.W * 0.5f, pos.y + shipData.H * 0.5f);
 
     // パッド更新.
     m_Pad.UpdateState();
@@ -83,20 +104,26 @@ void Player::Update(uint32_t w, uint32_t h)
         pos.x += m_MoveSpeed * m_Pad.GetNormalizedThumbLX();
         pos.y -= m_MoveSpeed * m_Pad.GetNormalizedThumbLY();
 
-        center = asdx::Vector2(pos.x + data.W * 0.5f, pos.y + data.H * 0.5f);
+        // 中心位置更新.
+        center = asdx::Vector2(pos.x + shipData.W * 0.5f, pos.y + shipData.H * 0.5f);
 
         if (m_Pad.IsDown(kShotButton))
         {
-            auto& shotData = GetSpriteData(LASER_BLUE01);
-            auto x = center.x - float(shotData.W) * 0.5f;
-            auto y = pos.y    + float(shotData.H);
+            auto x = center.x;
+            auto y = center.y;
 
             // 真上方向に撃つ.
-            GetPlayerBulletMgr().Spwan(LASER_BLUE01, x, y, -90.0f, 0.0f, kShotSpeed, 0.0f);
+            GetPlayerBulletMgr().Spwan(kLaser[idx], x, y, -90.0f, 0.0f, kShotSpeed, 0.0f);
         }
+
+        // 操作時のみクランプ処理を入れる.
+        // ※ 演出上で画面外にも出せるようにするため.
+        pos = asdx::Vector2::Clamp(
+            pos,
+            asdx::Vector2(0.0f, 0.0f),
+            asdx::Vector2(float(w - shipData.W), float(h - shipData.H)));
     }
 
-    pos = asdx::Vector2::Clamp(pos, asdx::Vector2(0.0f, 0.0f), asdx::Vector2(float(w - data.W), float(h - data.H)));
     SetPos(pos);
 }
 
@@ -130,3 +157,21 @@ void Player::SetLife(uint8_t value)
 uint8_t Player::GetLife() const
 { return m_Life; }
 
+
+namespace {
+
+//-----------------------------------------------------------------------------
+// Global Variables.
+//-----------------------------------------------------------------------------
+static Player g_Player[4] = {};
+
+} // namespace
+
+//----------------------------------------------------------------------------
+//      プレイヤーを取得します.
+//----------------------------------------------------------------------------
+Player& GetPlayer(uint32_t index)
+{
+    assert(index < 4);
+    return g_Player[index];
+}

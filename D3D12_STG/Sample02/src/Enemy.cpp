@@ -1,95 +1,130 @@
 ﻿//-----------------------------------------------------------------------------
-// File : Bullet.cpp
-// Desc : Bullet.
+// File : Enemy.cpp
+// Desc : Enemy Class
 // Copyright(c) Project Asura. All right reserved.
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 // Includes
 //-----------------------------------------------------------------------------
-#include "Bullet.h"
+#include "Enemy.h"
 #include <fnd/asdxLogger.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Bullet class
+// Enemy class
 ///////////////////////////////////////////////////////////////////////////////
 
 //-----------------------------------------------------------------------------
 //      コンストラクタです.
 //-----------------------------------------------------------------------------
-Bullet::Bullet()
-: Entity()
-{ /* DO_NOTHING */ }
-
-//-----------------------------------------------------------------------------
-//      引数付きコンストラクタです.
-//-----------------------------------------------------------------------------
-Bullet::Bullet
-(
-    uint16_t    kind,
-    float       px,
-    float       py,
-    float       angle,
-    float       angleRate,
-    float       speed,
-    float       speedRate
-)
-: Entity(kind, px, py, true)
-, m_Angle       (angle)
-, m_AngleRate   (angleRate)
-, m_Speed       (speed)
-, m_SpeedRate   (speedRate)
-{ /* DO_NOTHING */ }
-
-//-----------------------------------------------------------------------------
-//      更新処理を行います.
-//-----------------------------------------------------------------------------
-void Bullet::Update()
-{
-    asdx::Vector2 pos = GetPos();
-
-    // 角度をラジアンに変換.
-    auto rad = asdx::ToRadian(m_Angle);
-
-    // 角度と速さを使って、座標を更新.
-    pos.x += m_Speed * cosf(rad);
-    pos.y += m_Speed * sinf(rad);
-    SetPos(pos);
-
-    // 角度に角速度を加算する.
-    m_Angle += m_AngleRate;
-
-    // 速度に加速度を加算する.
-    m_Speed += m_SpeedRate;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// BulletManager class
-///////////////////////////////////////////////////////////////////////////////
-
-//-----------------------------------------------------------------------------
-//      コンストラクタです.
-//-----------------------------------------------------------------------------
-BulletManager::BulletManager()
+Enemy::Enemy()
 { /* DO_NOTHING */ }
 
 //-----------------------------------------------------------------------------
 //      デストラクタです.
 //-----------------------------------------------------------------------------
-BulletManager::~BulletManager()
+Enemy::~Enemy()
+{ /* DO_NOTHING */ }
+
+//-----------------------------------------------------------------------------
+//      セットアップ処理を行います.
+//-----------------------------------------------------------------------------
+void Enemy::Setup
+(
+    uint16_t            kind,
+    float               x,
+    float               y,
+    const ShotParam&    shotParam,
+    const MoveParam&    moveParam,
+    EnemyBehavior       shotBehvaior,
+    EnemyBehavior       moveBehavior
+)
+{
+    SetKind(kind);
+    SetCenter(x, y);
+    m_ShotParam    = shotParam;
+    m_MoveParam    = moveParam;
+    m_ShotBehavior = shotBehvaior;
+    m_MoveBehavior = moveBehavior;
+}
+
+//-----------------------------------------------------------------------------
+//      発弾パラメータを設定します.
+//-----------------------------------------------------------------------------
+void Enemy::SetShotParam(const ShotParam& value)
+{ m_ShotParam = value; }
+
+//-----------------------------------------------------------------------------
+//      移動パラメータを設定します.
+//-----------------------------------------------------------------------------
+void Enemy::SetMoveParam(const MoveParam& value)
+{ m_MoveParam = value; }
+
+//-----------------------------------------------------------------------------
+//      発弾パラメータを取得します.
+//-----------------------------------------------------------------------------
+const Enemy::ShotParam& Enemy::GetShotParam() const
+{ return m_ShotParam; }
+
+//-----------------------------------------------------------------------------
+//      移動パラメータを取得します.
+//-----------------------------------------------------------------------------
+const Enemy::MoveParam& Enemy::GetMoveParam() const
+{ return m_MoveParam; }
+
+//-----------------------------------------------------------------------------
+//      発弾挙動を設定します.
+//-----------------------------------------------------------------------------
+void Enemy::SetShotBehavior(EnemyBehavior value)
+{ m_ShotBehavior = value; }
+
+//-----------------------------------------------------------------------------
+//      移動挙動を設定します.
+//-----------------------------------------------------------------------------
+void Enemy::SetMoveBehavior(EnemyBehavior value)
+{ m_MoveBehavior = value; }
+
+//-----------------------------------------------------------------------------
+//      更新処理を行います.
+//-----------------------------------------------------------------------------
+void Enemy::Update()
+{
+    // 移動処理.
+    if (m_MoveBehavior != nullptr)
+    { m_MoveBehavior(*this); }
+
+    // 発弾処理.
+    if (m_ShotBehavior != nullptr)
+    { m_ShotBehavior(*this); }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// EnemyManager class
+///////////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------------
+//      コンストラクタです.
+//-----------------------------------------------------------------------------
+EnemyManager::EnemyManager()
+{ /* DO_NOTHING */ }
+
+//-----------------------------------------------------------------------------
+//      デストラクタです.
+//-----------------------------------------------------------------------------
+EnemyManager::~EnemyManager()
 { Term(); }
 
 //-----------------------------------------------------------------------------
 //      初期化を行います.
 //-----------------------------------------------------------------------------
-bool BulletManager::Init(uint32_t count)
+bool EnemyManager::Init(uint32_t count)
 {
     Term();
 
-    m_Bullets = new(std::nothrow) Bullet[count];
-    if (m_Bullets == nullptr)
+    m_Enemies = new(std::nothrow) Enemy[count];
+    if (m_Enemies == nullptr)
     {
         ELOGA("Error : Out of Memory.");
         return false;
@@ -99,7 +134,7 @@ bool BulletManager::Init(uint32_t count)
     m_UsedCount = 0;
 
     for(auto i=0u; i<count; ++i)
-    { m_FreeList.push_back(&m_Bullets[i]); }
+    { m_FreeList.push_back(&m_Enemies[i]); }
 
     return true;
 }
@@ -107,46 +142,63 @@ bool BulletManager::Init(uint32_t count)
 //-----------------------------------------------------------------------------
 //      終了処理を行います.
 //-----------------------------------------------------------------------------
-void BulletManager::Term()
+void EnemyManager::Term()
 {
     m_FreeList.clear();
     m_UsedList.clear();
     m_MaxCount  = 0;
     m_UsedCount = 0;
 
-    if (m_Bullets)
+    if (m_Enemies)
     {
-        delete[] m_Bullets;
-        m_Bullets = nullptr;
+        delete[] m_Enemies;
+        m_Enemies = nullptr;
     }
+
+    m_Types.clear();
 }
+
+//-----------------------------------------------------------------------------
+//      生成タイプを登録します.
+//-----------------------------------------------------------------------------
+void EnemyManager::AddType(uint32_t type, SpawnParam param)
+{ m_Types[type] = param; }
+
+//-----------------------------------------------------------------------------
+//      生成タイプを登録解除します.
+//-----------------------------------------------------------------------------
+void EnemyManager::DelType(uint32_t type)
+{ m_Types.erase(type); }
+
+//-----------------------------------------------------------------------------
+//      生成タイプをクリアします.
+//-----------------------------------------------------------------------------
+void EnemyManager::ClearTypes()
+{ m_Types.clear(); }
 
 //-----------------------------------------------------------------------------
 //      弾を生成します.
 //-----------------------------------------------------------------------------
-bool BulletManager::Spwan
-(
-    uint16_t    kind,
-    float       px,
-    float       py,
-    float       angle,
-    float       angleRate,
-    float       speed,
-    float       speedRate
-)
+bool EnemyManager::Spwan(uint32_t type, float x, float y)
 {
     if (m_UsedCount + 1 >= m_MaxCount)
+        return false;
+
+    auto item = m_Types.find(type);
+    if (item == m_Types.end())
         return false;
 
     auto itr = &(*(m_FreeList.begin()));
     m_FreeList.pop_front();
 
-    itr->SetKind(kind);
-    itr->SetCenter(px, py);
-    itr->SetAngle(angle);
-    itr->SetAngleRate(angleRate);
-    itr->SetSpeed(speed);
-    itr->SetSpeedRate(speedRate);
+    itr->Setup(
+        item->second.ShipKind,
+        x,
+        y,
+        item->second.InitShotParam,
+        item->second.InitMoveParam,
+        item->second.ShotBehavior,
+        item->second.MoveBehavior);
 
     m_UsedList.push_back(itr);
     m_UsedCount++;
@@ -157,7 +209,7 @@ bool BulletManager::Spwan
 //-----------------------------------------------------------------------------
 //      更新処理を行います.
 //-----------------------------------------------------------------------------
-void BulletManager::Update(uint32_t w, uint32_t h)
+void EnemyManager::Update(uint32_t w, uint32_t h)
 {
     for(auto& itr : m_UsedList)
     { itr.Update(); }
@@ -185,7 +237,7 @@ void BulletManager::Update(uint32_t w, uint32_t h)
 //-----------------------------------------------------------------------------
 //      スプライトを描画します.
 //-----------------------------------------------------------------------------
-void BulletManager::Draw(asdx::SpriteRenderer& renderer)
+void EnemyManager::Draw(asdx::SpriteRenderer& renderer)
 {
     for(auto& itr : m_UsedList)
     { itr.Draw(renderer); }
@@ -194,7 +246,7 @@ void BulletManager::Draw(asdx::SpriteRenderer& renderer)
 //-----------------------------------------------------------------------------
 //      交差判定を行います.
 //-----------------------------------------------------------------------------
-bool BulletManager::IsHit(const Entity& entity)
+bool EnemyManager::IsHit(const Entity& entity)
 {
     bool hit = false;
 
@@ -224,19 +276,12 @@ namespace {
 //-----------------------------------------------------------------------------
 // Global Variables.
 //-----------------------------------------------------------------------------
-static BulletManager g_PlayerBulletMgr;     //!< プレイヤー用弾マネージャ.
-static BulletManager g_EnemyBulletMgr;      //!< エネミー用弾マネージャ.
+static EnemyManager g_EnemyManager;
 
 } // namespace
 
 //-----------------------------------------------------------------------------
-//      プレイヤー用弾マネージャを取得します.
+//      敵マネージャを取得します.
 //-----------------------------------------------------------------------------
-BulletManager& GetPlayerBulletMgr()
-{ return g_PlayerBulletMgr; }
-
-//-----------------------------------------------------------------------------
-//      エネミー用弾マネージャを取得します.
-//-----------------------------------------------------------------------------
-BulletManager& GetEnemyBulletMgr()
-{ return g_EnemyBulletMgr; }
+EnemyManager& GetEnemyMgr()
+{ return g_EnemyManager; }

@@ -65,7 +65,6 @@ private:
     int                     m_OffsetBG0 = 0;
     int                     m_OffsetBG1 = 0;
     int                     m_OffsetBG2 = 0;
-    Player                  m_Player;
     asdx::Font              m_Font;
     Entity                  m_Enemy;
 

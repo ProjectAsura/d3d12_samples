@@ -129,6 +129,8 @@ bool BulletManager::Spwan
     uint16_t    kind,
     float       px,
     float       py,
+    float       sx,
+    float       sy,
     float       angle,
     float       angleRate,
     float       speed,
@@ -143,6 +145,7 @@ bool BulletManager::Spwan
 
     itr->SetKind(kind);
     itr->SetCenter(px, py);
+    itr->SetScale(sx, sy);
     itr->SetAngle(angle);
     itr->SetAngleRate(angleRate);
     itr->SetSpeed(speed);

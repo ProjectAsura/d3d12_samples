@@ -187,6 +187,8 @@ public:
         uint16_t kind,
         float    px,
         float    py,
+        float    sx,
+        float    sy,
         float    arngle,
         float    angleRate,
         float    speed,

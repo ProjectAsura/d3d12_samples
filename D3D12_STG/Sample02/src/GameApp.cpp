@@ -41,6 +41,11 @@ asdx::TextureHolder LoadTexture(const char* path)
     return asdx::TextureManager::Instance().GetOrCreate(findPath.string().c_str());
 }
 
+// 弾挙動.
+DirShotBehavior         g_DirShotBehavior;
+SpiralShotBehavior      g_SpialShotBehavior;
+AimingDirShotBehavior   g_AimingDirShotBehavior;
+
 } // namespace
 
 
@@ -206,22 +211,66 @@ bool GameApp::OnInit()
 
     // プレイヤー初期化.
     {
-        auto& player0 = GetPlayer(0);
-        player0.Init(0u, m_Width * 0.5f, float(m_Height), true);
-        player0.SetPadLock(false);
+        auto& player = GetPlayer();
+        player.Init(m_Width * 0.5f, float(m_Height), 1.0f, 1.0f, true);
+        player.SetPadLock(false);
     }
 
 
+    auto& enemyMgr = GetEnemyMgr();
+    // エネミーマネージャ初期化.
+    if (!enemyMgr.Init(512))
     {
-        EnemyManager::SpawnParam param;
-        param.ShipKind              = ENEMY_BLACK1;
-        param.ShotBehavior          = DirectionalShot;
-        param.InitShotParam.Angle   = 90.0f;
-        param.InitShotParam.Speed   = 0.1f;
+        ELOGA("Error : Enemy Manager Initialize Failed.");
+        return false;
+    }
 
-        auto& enemyMgr = GetEnemyMgr();
-        enemyMgr.AddType(0, param);
-        enemyMgr.Spwan(0, m_Width * 0.5f, 100.0f);
+    // 方向弾.
+    {
+        DirShotBehavior::Param param = {};
+
+        param.SpriteKind = LASER_RED14;
+        param.Angle      = 90.0f;
+        param.Speed      = 5.0f;
+        param.Interval   = 10;
+        param.Count      = 5;
+        param.AngleRange = 60.0f;
+        param.ShotTime   = 10;
+        param.Scale      = asdx::Vector2(1.0f, 0.25f);
+
+        g_DirShotBehavior.SetParam(param);
+
+        EnemyManager::SpawnParam spawnParam = {};
+        spawnParam.SpriteKind    = ENEMY_BLACK1;
+        spawnParam.pShotBehavior = &g_DirShotBehavior;
+
+        enemyMgr.AddType(0, spawnParam);
+    }
+
+    // 狙い撃ち方向弾.
+    {
+        AimingDirShotBehavior::Param param = {};
+
+        param.SpriteKind = LASER_RED14;
+        param.Speed      = 5.0f;
+        param.Interval   = 10;
+        param.Count      = 5;
+        param.AngleRange = 60.0f;
+        param.ShotTime   = 10;
+        param.Scale      = asdx::Vector2(1.0f, 0.25f);
+
+        g_AimingDirShotBehavior.SetParam(param);
+
+        EnemyManager::SpawnParam spawnParam = {};
+        spawnParam.SpriteKind    = ENEMY_BLACK1;
+        spawnParam.pShotBehavior = &g_AimingDirShotBehavior;
+
+        enemyMgr.AddType(1, spawnParam);
+    }
+
+    // 敵生成.
+    {
+        enemyMgr.Spwan(1, m_Width * 0.5f, 100.0f);
     }
 
     // コマンドの記録を終了.
@@ -327,22 +376,19 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     // スプライトチップ設定.
     m_SpriteRenderer.SetTexture(m_SpriteChip.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
 
-    // 敵
-    m_Enemy.Draw(m_SpriteRenderer);
-
-
     // 弾制御.
     GetEnemyBulletMgr ().Update(m_Width, m_Height);
     GetPlayerBulletMgr().Update(m_Width, m_Height);
     GetEnemyBulletMgr ().Draw(m_SpriteRenderer);
     GetPlayerBulletMgr().Draw(m_SpriteRenderer);
 
+    GetEnemyMgr().Update(m_Width, m_Height);
     GetEnemyMgr().Draw(m_SpriteRenderer);
 
     // プレイヤー制御.
-    auto& player0 = GetPlayer(0);
-    player0.Update(m_Width, m_Height);
-    player0.Draw(m_SpriteRenderer);
+    auto& player = GetPlayer();
+    player.Update(m_Width, m_Height);
+    player.Draw(m_SpriteRenderer);
 }
 
 //-----------------------------------------------------------------------------

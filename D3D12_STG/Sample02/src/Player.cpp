@@ -18,7 +18,7 @@ namespace {
 // Constants.
 //-----------------------------------------------------------------------------
 constexpr uint8_t   kDefaultLife      = 3;        //!< 残機数のデフォルト値.
-constexpr float     kDefaultMoveSpeed = 3.0f;     //!< プレイヤー移動速度のデフォルト値.
+constexpr float     kDefaultMoveSpeed = 5.0f;     //!< プレイヤー移動速度のデフォルト値.
 constexpr float     kShotSpeed        = 25.0f;    //!< 弾の速さ.
 constexpr uint32_t  kMaxPlayerCount   = 3;        //!< 最大プレイヤー数.
 
@@ -57,17 +57,18 @@ Player::~Player()
 //-----------------------------------------------------------------------------
 //      初期化処理を行います.
 //-----------------------------------------------------------------------------
-void Player::Init(uint32_t playerIndex, float px, float py, bool center)
+void Player::Init(float px, float py, float sx, float sy, bool center)
 {
-    assert(playerIndex < kMaxPlayerCount);
-    m_Pad.SetPlayerIndex(playerIndex);
+    m_Pad.SetPlayerIndex(0);
 
-    SetKind(kPlayerShip[playerIndex]);
+    SetKind(kPlayerShip[0]);
 
     if (center)
     { SetCenter(px, py); }
     else
     { SetPos(px, py); }
+
+    SetScale(sx, sy);
 
     m_Life      = kDefaultLife;
     m_MoveSpeed = kDefaultMoveSpeed;
@@ -90,6 +91,7 @@ void Player::Update(uint32_t w, uint32_t h)
 {
     // プレイヤー番号取得.
     auto idx = m_Pad.GetPlayerIndex();
+    assert(idx < kMaxPlayerCount);
 
     asdx::Vector2 pos = GetPos();
     const auto& shipData = GetSpriteData(kPlayerShip[idx]);
@@ -113,7 +115,7 @@ void Player::Update(uint32_t w, uint32_t h)
             auto y = center.y;
 
             // 真上方向に撃つ.
-            GetPlayerBulletMgr().Spwan(kLaser[idx], x, y, -90.0f, 0.0f, kShotSpeed, 0.0f);
+            GetPlayerBulletMgr().Spwan(kLaser[idx], x, y, 1.0f, 1.0f, -90.0f, 0.0f, kShotSpeed, 0.0f);
         }
 
         // 操作時のみクランプ処理を入れる.
@@ -163,15 +165,12 @@ namespace {
 //-----------------------------------------------------------------------------
 // Global Variables.
 //-----------------------------------------------------------------------------
-static Player g_Player[4] = {};
+static Player g_Player = {};
 
 } // namespace
 
 //----------------------------------------------------------------------------
 //      プレイヤーを取得します.
 //----------------------------------------------------------------------------
-Player& GetPlayer(uint32_t index)
-{
-    assert(index < 4);
-    return g_Player[index];
-}
+Player& GetPlayer()
+{ return g_Player; }

@@ -27,6 +27,7 @@ Entity::Entity()
 //-----------------------------------------------------------------------------
 Entity::Entity(uint16_t kind, float x, float y, bool center)
 : m_Kind(kind)
+, m_Scale(1.0f, 1.0f)
 {
     if (center)
     {
@@ -46,12 +47,53 @@ Entity::Entity(uint16_t kind, float x, float y, bool center)
 //-----------------------------------------------------------------------------
 Entity::Entity(uint16_t kind, const asdx::Vector2& pos, bool center)
 : m_Kind(kind)
+, m_Scale(1.0f, 1.0f)
 {
     if (center)
     {
         const auto& data = GetSpriteData(SpriteKind(kind));
         m_Pos.x = pos.x - data.W * 0.5f;
         m_Pos.y = pos.y - data.H * 0.5f;
+    }
+    else
+    {
+        m_Pos = pos;
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+//      引数付きコンストラクタです.
+//-----------------------------------------------------------------------------
+Entity::Entity(uint16_t kind, float x, float y, float sx, float sy, bool center)
+: m_Kind(kind)
+, m_Scale(sx, sy)
+{
+    if (center)
+    {
+        const auto& data = GetSpriteData(SpriteKind(kind));
+        m_Pos.x = x - (data.W * 0.5f) * m_Scale.x;
+        m_Pos.y = y - (data.H * 0.5f) * m_Scale.y;
+    }
+    else
+    {
+        m_Pos.x = x;
+        m_Pos.y = y;
+    }
+}
+
+//-----------------------------------------------------------------------------
+//      引数付きコンストラクタです.
+//-----------------------------------------------------------------------------
+Entity::Entity(uint16_t kind, const asdx::Vector2& pos, const asdx::Vector2& scale, bool center)
+: m_Kind(kind)
+, m_Scale(scale)
+{
+    if (center)
+    {
+        const auto& data = GetSpriteData(SpriteKind(kind));
+        m_Pos.x = pos.x - (data.W * 0.5f) * m_Scale.x;
+        m_Pos.y = pos.y - (data.H * 0.5f) * m_Scale.y;
     }
     else
     {
@@ -104,8 +146,8 @@ void Entity::SetPosY(float value)
 void Entity::SetCenter(const asdx::Vector2& value)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    m_Pos.x = value.x - data.W * 0.5f;
-    m_Pos.y = value.y - data.H * 0.5f;
+    m_Pos.x = value.x - (data.W * 0.5f) * m_Scale.x;
+    m_Pos.y = value.y - (data.H * 0.5f) * m_Scale.y;
 }
 
 //-----------------------------------------------------------------------------
@@ -114,8 +156,8 @@ void Entity::SetCenter(const asdx::Vector2& value)
 void Entity::SetCenter(float x, float y)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    m_Pos.x = x - data.W * 0.5f;
-    m_Pos.y = y - data.H * 0.5f;
+    m_Pos.x = x - (data.W * 0.5f) * m_Scale.x;
+    m_Pos.y = y - (data.H * 0.5f) * m_Scale.y;
 }
 
 //-----------------------------------------------------------------------------
@@ -124,7 +166,7 @@ void Entity::SetCenter(float x, float y)
 void Entity::SetCenterX(float value)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    m_Pos.x = value - data.W * 0.5f;
+    m_Pos.x = value - (data.W * 0.5f) * m_Scale.x;
 }
 
 //-----------------------------------------------------------------------------
@@ -133,8 +175,35 @@ void Entity::SetCenterX(float value)
 void Entity::SetCenterY(float value)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    m_Pos.y = value - data.H * 0.5f;
+    m_Pos.y = value - (data.H * 0.5f) * m_Scale.y;
 }
+
+//-----------------------------------------------------------------------------
+//      描画スケールを設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetScale(const asdx::Vector2& value)
+{ m_Scale = value; }
+
+//-----------------------------------------------------------------------------
+//      描画スケールを設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetScale(float x, float y)
+{
+    m_Scale.x = x;
+    m_Scale.y = y;
+}
+
+//-----------------------------------------------------------------------------
+//      X方向の描画スケールを設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetScaleX(float value)
+{ m_Scale.x = value; }
+
+//-----------------------------------------------------------------------------
+//      Y方向の描画スケールを設定します.
+//-----------------------------------------------------------------------------
+void Entity::SetScaleY(float value)
+{ m_Scale.y = value; }
 
 //-----------------------------------------------------------------------------
 //      スプライト種別を取得します.
@@ -167,8 +236,8 @@ asdx::Vector2 Entity::GetCenter() const
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
     asdx::Vector2 result;
-    result.x = m_Pos.x + data.W * 0.5f;
-    result.y = m_Pos.y + data.H * 0.5f;
+    result.x = m_Pos.x + (data.W * 0.5f) * m_Scale.x;
+    result.y = m_Pos.y + (data.H * 0.5f) * m_Scale.y;
     return result;
 }
 
@@ -178,7 +247,7 @@ asdx::Vector2 Entity::GetCenter() const
 float Entity::GetCenterX() const
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    return m_Pos.x + data.W * 0.5f;
+    return m_Pos.x + (data.W * 0.5f) * m_Scale.x;
 }
 
 //-----------------------------------------------------------------------------
@@ -187,7 +256,7 @@ float Entity::GetCenterX() const
 float Entity::GetCenterY() const
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    return m_Pos.y + data.H * 0.5f;
+    return m_Pos.y + (data.H * 0.5f) * m_Scale.y;
 }
 
 //-----------------------------------------------------------------------------
@@ -200,12 +269,45 @@ asdx::Int2 Entity::GetSize() const
 }
 
 //-----------------------------------------------------------------------------
+//      スケール済みスプライトサイズを取得します.
+//-----------------------------------------------------------------------------
+asdx::Int2 Entity::GetScaledSize() const
+{
+    const auto& data = GetSpriteData(SpriteKind(m_Kind));
+    return asdx::Int2(int(data.W * m_Scale.x), int(data.H * m_Scale.y));
+}
+
+//-----------------------------------------------------------------------------
+//      描画スケールを取得します.
+//-----------------------------------------------------------------------------
+const asdx::Vector2& Entity::GetScale() const
+{ return m_Scale; }
+
+//-----------------------------------------------------------------------------
+//      X方向の描画スケールを取得します.
+//-----------------------------------------------------------------------------
+float Entity::GetScaleX() const
+{ return m_Scale.x; }
+
+//-----------------------------------------------------------------------------
+//      Y方向の描画スケールを取得します.
+//-----------------------------------------------------------------------------
+float Entity::GetScaleY() const
+{ return m_Scale.y; }
+
+//-----------------------------------------------------------------------------
 //      スプライトを描画します.
 //-----------------------------------------------------------------------------
 void Entity::Draw(asdx::SpriteRenderer& renderer)
 {
     const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    renderer.Add(int(m_Pos.x), int(m_Pos.y), data.W, data.H, data.uv0, data.uv1);
+    renderer.Add(
+        int(m_Pos.x),
+        int(m_Pos.y),
+        int(data.W * m_Scale.x),
+        int(data.H * m_Scale.y),
+        data.uv0,
+        data.uv1);
 }
 
 //-----------------------------------------------------------------------------
@@ -213,9 +315,9 @@ void Entity::Draw(asdx::SpriteRenderer& renderer)
 //-----------------------------------------------------------------------------
 bool Entity::IsHit(const asdx::Vector2& pos, const asdx::Int2& size) const
 {
-    const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    return !((m_Pos.x + float(data.W)) <= pos.x || (pos.x + float(size.x)) <= m_Pos.x ||
-             (m_Pos.y + float(data.H)) <= pos.y || (pos.y + float(size.y)) <= m_Pos.y);
+    const auto selfSize = GetScaledSize();
+    return !((m_Pos.x + selfSize.x) <= pos.x || (pos.x + float(size.x)) <= m_Pos.x ||
+             (m_Pos.y + selfSize.y) <= pos.y || (pos.y + float(size.y)) <= m_Pos.y);
 }
 
 //-----------------------------------------------------------------------------
@@ -229,7 +331,13 @@ bool Entity::IsHit(const Entity& target) const
 //-----------------------------------------------------------------------------
 bool Entity::IsOutOfScreen(uint32_t w, uint32_t h)
 {
-    const auto& data = GetSpriteData(SpriteKind(m_Kind));
-    return ((m_Pos.x + float(data.W)) < 0 || m_Pos.x > float(w)
-         || (m_Pos.y + float(data.H)) < 0 || m_Pos.y > float(h));
+    const auto selfSize = GetScaledSize();
+    return ((m_Pos.x + selfSize.x) < 0 || m_Pos.x > float(w)
+         || (m_Pos.y + selfSize.y) < 0 || m_Pos.y > float(h));
 }
+
+//-----------------------------------------------------------------------------
+//      指定ターゲットへの角度を求めます.
+//-----------------------------------------------------------------------------
+float Entity::ToAngle(const asdx::Vector2& targetPos)
+{ return asdx::ToDegree(atan2f(targetPos.y - m_Pos.y, targetPos.x - m_Pos.x)); }

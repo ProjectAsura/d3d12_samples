@@ -35,55 +35,36 @@ void Enemy::Setup
     uint16_t            kind,
     float               x,
     float               y,
-    const ShotParam&    shotParam,
-    const MoveParam&    moveParam,
-    EnemyBehavior       shotBehvaior,
-    EnemyBehavior       moveBehavior
+    float               sx,
+    float               sy,
+    IBehavior*          pShotBehavior,
+    IBehavior*          pMoveBehavior
 )
 {
     SetKind(kind);
     SetCenter(x, y);
-    m_ShotParam    = shotParam;
-    m_MoveParam    = moveParam;
-    m_ShotBehavior = shotBehvaior;
-    m_MoveBehavior = moveBehavior;
+    SetScale(sx, sy);
+    m_pShotBehavior = pShotBehavior;
+    m_pMoveBehavior = pMoveBehavior;
 }
 
 //-----------------------------------------------------------------------------
-//      発弾パラメータを設定します.
+//      パラメータを設定します.
 //-----------------------------------------------------------------------------
-void Enemy::SetShotParam(const ShotParam& value)
-{ m_ShotParam = value; }
+void Enemy::SetParam(const asdx::Vector4& value)
+{ m_Param = value; }
 
 //-----------------------------------------------------------------------------
-//      移動パラメータを設定します.
+//      パラメータを返却します.
 //-----------------------------------------------------------------------------
-void Enemy::SetMoveParam(const MoveParam& value)
-{ m_MoveParam = value; }
+const asdx::Vector4& Enemy::GetParam() const
+{ return m_Param; }
 
 //-----------------------------------------------------------------------------
-//      発弾パラメータを取得します.
+//      タイマーを取得します.
 //-----------------------------------------------------------------------------
-const Enemy::ShotParam& Enemy::GetShotParam() const
-{ return m_ShotParam; }
-
-//-----------------------------------------------------------------------------
-//      移動パラメータを取得します.
-//-----------------------------------------------------------------------------
-const Enemy::MoveParam& Enemy::GetMoveParam() const
-{ return m_MoveParam; }
-
-//-----------------------------------------------------------------------------
-//      発弾挙動を設定します.
-//-----------------------------------------------------------------------------
-void Enemy::SetShotBehavior(EnemyBehavior value)
-{ m_ShotBehavior = value; }
-
-//-----------------------------------------------------------------------------
-//      移動挙動を設定します.
-//-----------------------------------------------------------------------------
-void Enemy::SetMoveBehavior(EnemyBehavior value)
-{ m_MoveBehavior = value; }
+int Enemy::GetTimer() const
+{ return m_Timer; }
 
 //-----------------------------------------------------------------------------
 //      更新処理を行います.
@@ -91,12 +72,14 @@ void Enemy::SetMoveBehavior(EnemyBehavior value)
 void Enemy::Update()
 {
     // 移動処理.
-    if (m_MoveBehavior != nullptr)
-    { m_MoveBehavior(*this); }
+    if (m_pMoveBehavior != nullptr)
+    { m_pMoveBehavior->OnTick(*this); }
 
     // 発弾処理.
-    if (m_ShotBehavior != nullptr)
-    { m_ShotBehavior(*this); }
+    if (m_pShotBehavior != nullptr)
+    { m_pShotBehavior->OnTick(*this); }
+
+    m_Timer++;
 }
 
 
@@ -179,7 +162,7 @@ void EnemyManager::ClearTypes()
 //-----------------------------------------------------------------------------
 //      弾を生成します.
 //-----------------------------------------------------------------------------
-bool EnemyManager::Spwan(uint32_t type, float x, float y)
+bool EnemyManager::Spwan(uint32_t type, float x, float y, float sx, float sy)
 {
     if (m_UsedCount + 1 >= m_MaxCount)
         return false;
@@ -192,13 +175,13 @@ bool EnemyManager::Spwan(uint32_t type, float x, float y)
     m_FreeList.pop_front();
 
     itr->Setup(
-        item->second.ShipKind,
+        item->second.SpriteKind,
         x,
         y,
-        item->second.InitShotParam,
-        item->second.InitMoveParam,
-        item->second.ShotBehavior,
-        item->second.MoveBehavior);
+        sx,
+        sy,
+        item->second.pShotBehavior,
+        item->second.pMoveBehavior);
 
     m_UsedList.push_back(itr);
     m_UsedCount++;

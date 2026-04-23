@@ -43,7 +43,7 @@ asdx::TextureHolder LoadTexture(const char* path)
 
 // 弾挙動.
 DirShotBehavior         g_DirShotBehavior;
-SpiralShotBehavior      g_SpialShotBehavior;
+SpiralShotBehavior      g_SpiralShotBehavior;
 AimingDirShotBehavior   g_AimingDirShotBehavior;
 
 } // namespace
@@ -268,9 +268,30 @@ bool GameApp::OnInit()
         enemyMgr.AddType(1, spawnParam);
     }
 
+    // 渦巻弾.
+    {
+        SpiralShotBehavior::Param param = {};
+
+        param.SpriteKind = LASER_RED14;
+        param.Speed      = 5.0f;
+        param.Count      = 5;
+        param.Angle      = 90.0f;
+        param.AngleRate  = 3.5f;
+        param.Interval   = 60;
+        param.Scale      = asdx::Vector2(1.0f, 0.25f);
+
+        g_SpiralShotBehavior.SetParam(param);
+
+        EnemyManager::SpawnParam spawnParam = {};
+        spawnParam.SpriteKind    = ENEMY_BLACK1;
+        spawnParam.pShotBehavior = &g_SpiralShotBehavior;
+
+        enemyMgr.AddType(2, spawnParam);
+    }
+
     // 敵生成.
     {
-        enemyMgr.Spwan(1, m_Width * 0.5f, 100.0f);
+        enemyMgr.Spwan(2, m_Width * 0.5f, 100.0f);
     }
 
     // コマンドの記録を終了.

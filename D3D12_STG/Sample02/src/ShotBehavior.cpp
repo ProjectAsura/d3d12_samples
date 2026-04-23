@@ -77,7 +77,7 @@ void SpiralShotBehavior::OnTick(Enemy& entity)
 
     asdx::Vector4 userData = entity.GetParam();
 
-    auto step = 1.0f / float(m_Param.Count);
+    auto step = 360.0f / float(m_Param.Count);
     for(auto i=0; i<m_Param.Count; ++i)
     {
         GetEnemyBulletMgr().Spwan(
@@ -85,14 +85,14 @@ void SpiralShotBehavior::OnTick(Enemy& entity)
             pos.x, pos.y,
             m_Param.Scale.x,
             m_Param.Scale.y,
-            userData.x + (step * i),
+            m_Param.Angle + userData.x + (step * i),
             m_Param.BulletAngleRate,
             m_Param.Speed,
             m_Param.BulletSpeedRate);
     }
 
     userData.x += m_Param.AngleRate;
-    userData.x -= floor(userData.x);
+    userData.x = asdx::Wrap(userData.x, -360.0f, 360.0f);
 
     entity.SetParam(userData);
 }

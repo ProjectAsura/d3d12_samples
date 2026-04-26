@@ -67,6 +67,7 @@ private:
     int                     m_OffsetBG2 = 0;
     asdx::Font              m_Font;
     Entity                  m_Enemy;
+    uint32_t                m_SpawnType = 0;
 
     //=========================================================================
     // private methods.

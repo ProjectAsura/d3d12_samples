@@ -50,27 +50,14 @@ void WaveMoveBehavior::OnTick(Enemy& entity)
         cx = param.z;
     }
 
-    auto timer = int(ceil(asdx::F_2PI / m_Param.AngleScale));
-    timer = entity.GetTimer() % timer;
+    auto angle = entity.GetTimer() * m_Param.AngleScale;
+    angle += m_Param.AngleOffset;
+    angle = asdx::Wrap(angle, 0.0f, 360.0f);
 
-    pos.x = m_Param.Amplitude * sinf(m_Param.AngleScale * timer + m_Param.AngleOffset) + cx;
+    pos.x = m_Param.Amplitude * sinf(asdx::ToRadian(angle)) + cx;
     pos.y += m_Param.Speed;
 
     entity.SetCenter(pos);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CircleMoveBehavior class
-///////////////////////////////////////////////////////////////////////////////
-
-//-----------------------------------------------------------------------------
-//      円状の移動処理です.
-//-----------------------------------------------------------------------------
-void CircleMoveBehavior::OnTick(Enemy& entity)
-{
-    auto pos = entity.GetCenter();
-
 }
 
 
@@ -85,4 +72,26 @@ void AimingMoveBehavior::OnTick(Enemy& entity)
 {
     auto pos = entity.GetCenter();
 
+    auto timer = entity.GetTimer();
+    if ((timer % m_Param.Interval) == 0)
+    {
+        auto playerPos = GetPlayer().GetCenter();
+        auto dir = playerPos - pos;
+        dir.Normalize();
+
+        asdx::Vector4 param = entity.GetParam();
+        param.z = dir.x * m_Param.Speed;
+        param.w = dir.y * m_Param.Speed;
+        pos.x += param.z;
+        pos.y += param.w;
+        entity.SetParam(param);
+        entity.SetCenter(pos);
+    }
+    else
+    {
+        const auto& param = entity.GetParam();
+        pos.x += param.z;
+        pos.y += param.w;
+        entity.SetCenter(pos);
+    }
 }

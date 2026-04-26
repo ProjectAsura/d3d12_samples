@@ -117,6 +117,137 @@ static const D3D12_INPUT_ELEMENT_DESC ShadowInputElements[] = {
     { "TEXCOORD"   , 0, DXGI_FORMAT_R32G32_FLOAT      , 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
 
+//-----------------------------------------------------------------------------
+//      指定方向に引き延ばした球と錐台が交差するか判定します.
+//-----------------------------------------------------------------------------
+bool IntersectSweptSphereFrustum
+(
+    const asdx::Vector4     planes[6],
+    const asdx::Vector3     center,
+    float                   radius,
+    const asdx::Vector3&    dir,    // ライトに向かう方向(照射方向と逆方向である正規化済みの-lightDir)を指定.
+    float&                  dist,
+    float                   tMax = FLT_MAX
+)
+{
+    auto t0 = 0.0f;
+    auto t1 = tMax;
+
+    for(auto i=0; i<6; ++i)
+    {
+        const auto& p = planes[i];
+        auto n = asdx::Vector3(p.x, p.y, p.z);
+
+        auto s  = asdx::Vector3::Dot(n, center) + p.w;
+        auto nd = asdx::Vector3::Dot(n, dir);
+
+        // 平行.
+        if (fabs(nd) < 1e-6f)
+        {
+            if (s < -radius)
+                return false;
+
+            continue;
+        }
+
+        auto t = -(radius - s) / nd;
+
+        if (nd > 0.0f) { t0 = asdx::Max(t0, t); }
+        else           { t1 = asdx::Min(t1, t); }
+
+        if (t0 > t1)
+            return false;
+    }
+
+    dist = t0;
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+//      指定方向に引き延ばしたAABBと錐台が交差するか判定します.
+//-----------------------------------------------------------------------------
+bool IntersectSweptAABBFrustum
+(
+    const asdx::Vector4     planes[6],
+    const asdx::Vector3&    center,
+    const asdx::Vector3&    halfExtent,
+    const asdx::Vector3&    dir,    // ライトに向かう方向(照射方向と逆方向である正規化済みの-lightDir)を指定.
+    float&                  dist,
+    float                   tMax = FLT_MAX
+)
+{
+    auto t0 = 0.0f;
+    auto t1 = tMax;
+
+    for(auto i=0; i<6; ++i)
+    {
+        const auto& p = planes[i];
+        auto n = asdx::Vector3(p.x, p.y, p.z);
+
+        auto r  = asdx::Vector3::Dot(asdx::Vector3::Abs(n), halfExtent);
+        auto s  = asdx::Vector3::Dot(n, center) + p.w;
+        auto nd = asdx::Vector3::Dot(n, dir);
+
+        // 平行.
+        if (fabs(nd) < 1e-6f)
+        {
+            if (s < -r)
+                return false;
+
+            continue;
+        }
+
+        auto t = (-r - s) / nd;
+
+        if (nd > 0.0f) { t0 = asdx::Max(t0, t); }
+        else           { t1 = asdx::Min(t1, t); }
+
+        if (t0 > t1)
+            return false;
+    }
+
+    dist = t0;
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+//      錐台内に球が含まれるかどうか判定します.
+//-----------------------------------------------------------------------------
+bool Contains(const asdx::Vector4* planes, const asdx::BoundingSphere3& sphere)
+{
+    for(auto i=0; i<6; ++i)
+    {
+        auto n = asdx::Vector3(planes[i].x, planes[i].y, planes[i].z);
+        auto s = asdx::Vector3::Dot(n, sphere.Center) + planes[i].w;
+
+        if (s < -sphere.Radius)
+            return false;
+    }
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+//      錐台内にAABBが含まれるかどうか判定します.
+//-----------------------------------------------------------------------------
+bool Contains(const asdx::Vector4* planes, const asdx::BoundingBox3& box)
+{
+    auto center = box.GetCenter();
+    auto halfExtent = box.GetSize() * 0.5f;
+
+    for(auto i=0; i<6; ++i)
+    {
+        auto n = asdx::Vector3(planes[i].x, planes[i].y, planes[i].z);
+        auto r = asdx::Vector3::Dot(asdx::Vector3::Abs(n), halfExtent);
+        auto s = asdx::Vector3::Dot(n, center) + planes[i].w;
+
+        if (s < -r)
+            return false;
+    }
+
+    return true;
+}
+
 
 } // namespace
 
@@ -562,16 +693,19 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     m_SpriteRenderer.Reset();
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
+    auto fieldOfView    = asdx::ToRadian(37.5f);
+    auto aspectRatio    = float(m_Width) / float(m_Height);
+    auto nearClip       = m_Camera.GetNearClip();
+    auto farClip        = m_Camera.GetFarClip();
+
+    auto view = m_Camera.GetView();
+    auto proj = asdx::Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio, nearClip, farClip);
+
     // シーン定数バッファ更新.
     {
-        auto fieldOfView    = asdx::ToRadian(37.5f);
-        auto aspectRatio    = float(m_Width) / float(m_Height);
-        auto nearClip       = m_Camera.GetNearClip();
-        auto farClip        = m_Camera.GetFarClip();
-
         SceneParam param = {};
-        param.View          = m_Camera.GetView();
-        param.Proj          = asdx::Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio, nearClip, farClip);
+        param.View          = view;
+        param.Proj          = proj;
         param.CameraPos     = m_Camera.GetPosition();
         param.FieldOfView   = fieldOfView;
         param.NearClip      = nearClip;
@@ -617,6 +751,65 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         mtx = asdx::Matrix::AppendTranslation(mtx, sphere.Center);
         m_ShapeParams.SetWorld(1, mtx);
         m_ShapeParams.SetColor(1, asdx::Vector4(0.0f, 1.0f, 1.0f, 0.25f));
+    }
+
+    // シャドウキャスターの領域を求める.
+    {
+        asdx::Vector4 planes[6];
+        asdx::CalcFrustumPlanes(view, proj, planes);
+
+        if (m_CalcBySphere)
+        {
+            m_CasterSphere = asdx::BoundingSphere3();
+
+            for(auto i=0u; i<m_Model.GetMeshCount(); ++i)
+            {
+                const auto pMesh = m_Model.GetMesh(i);
+                if (!pMesh->IsVisible())
+                    continue;
+
+                const auto& sphere = pMesh->GetSphere();
+
+                float dist = 0.0f;
+                if (IntersectSweptSphereFrustum(
+                    planes,
+                    sphere.Center,
+                    sphere.Radius,
+                    -m_DirLightForward,
+                    dist,
+                    farClip))
+                { m_CasterSphere = asdx::BoundingSphere3::Merge(m_CasterSphere, sphere); }
+
+                if (Contains(planes, sphere))
+                { m_CasterSphere = asdx::BoundingSphere3::Merge(m_CasterSphere, sphere); }
+            }
+        }
+        else
+        {
+            m_CasterBox = asdx::BoundingBox3();
+
+            for(auto i=0u; i<m_Model.GetMeshCount(); ++i)
+            {
+                const auto pMesh = m_Model.GetMesh(i);
+                if (!pMesh->IsVisible())
+                    continue;
+
+                const auto& box = pMesh->GetBox();
+
+                float dist = 0.0f;
+                if (IntersectSweptAABBFrustum(
+                    planes,
+                    box.GetCenter(),
+                    box.GetSize() * 0.5f,
+                    -m_DirLightForward,
+                    dist,
+                    farClip))
+                { m_CasterBox = asdx::BoundingBox3::Merge(m_CasterBox, box); }
+
+                if (Contains(planes, box))
+                { m_CasterBox = asdx::BoundingBox3::Merge(m_CasterBox, box); }
+            }
+        }
     }
 
     // シャドウシーンバッファ更新.
@@ -956,7 +1149,7 @@ void SampleApp::CalcShadowMatrixByBox()
     asdx::Vector3 right, upward;
     asdx::CalcONB(m_DirLightForward, right, upward);
 
-    const auto& box = m_Model.GetBox();
+    const auto& box = m_CasterBox;
     auto corners = box.GetCorners();
 
     auto size = asdx::Vector3::Abs(box.Maxi - box.Mini);
@@ -995,7 +1188,7 @@ void SampleApp::CalcShadowMatrixBySphere()
     asdx::Vector3 right, upward;
     asdx::CalcONB(m_DirLightForward, right, upward);
 
-    const auto& sphere = m_Model.GetSphere();
+    const auto& sphere = m_CasterSphere;
     const auto R = sphere.Radius * 2.0f;
 
     auto nearClip  = 1.0f;

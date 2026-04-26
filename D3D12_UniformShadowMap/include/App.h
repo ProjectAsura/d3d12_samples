@@ -75,7 +75,6 @@ private:
     asdx::LineRenderer                  m_LineRenderer;
     asdx::Matrix                        m_ShadowView;
     asdx::Matrix                        m_ShadowProj;
-    asdx::BoundingBox3                  m_SceneAABB;
     asdx::ConstantBuffer                m_ModelParamBuffer;
     asdx::SpriteRenderer                m_SpriteRenderer;
     asdx::Sampler                       m_LinerClamp;
@@ -85,6 +84,8 @@ private:
     asdx::BoxShape                      m_BoxShape;
     asdx::SphereShape                   m_SphereShape;
     asdx::DragTracker                   m_LeftDrag;
+    asdx::BoundingBox3                  m_CasterBox;
+    asdx::BoundingSphere3               m_CasterSphere;
 
     bool m_EnableShadow         = true;
     bool m_ShowShadowFrustum    = false;

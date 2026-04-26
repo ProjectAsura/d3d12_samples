@@ -15,7 +15,7 @@
 #include <fw/asdxSound.h>
 #include "Bullet.h"
 #include "Enemy.h"
-#include "ShotBehavior.h"
+#include "MoveBehavior.h"
 
 #if ASDX_DEBUG
 #include <edit/asdxGuiMgr.h>
@@ -41,10 +41,10 @@ asdx::TextureHolder LoadTexture(const char* path)
     return asdx::TextureManager::Instance().GetOrCreate(findPath.string().c_str());
 }
 
-// 弾挙動.
-DirShotBehavior         g_DirShotBehavior;
-SpiralShotBehavior      g_SpiralShotBehavior;
-AimingDirShotBehavior   g_AimingDirShotBehavior;
+// 移動挙動.
+OneWayMoveBehavior  g_OneWayMoveBehavior;
+WaveMoveBehavior    g_WaveMoveBehavior;
+AimingMoveBehavior  g_AimingMoveBahavior;
 
 } // namespace
 
@@ -225,73 +225,56 @@ bool GameApp::OnInit()
         return false;
     }
 
-    // 方向弾.
+    // 直線移動.
     {
-        DirShotBehavior::Param param = {};
+        OneWayMoveBehavior::Param param = {};
+        param.Velocity = asdx::Vector2(0.0f, 2.0f);
 
-        param.SpriteKind = LASER_RED14;
-        param.Angle      = 90.0f;
-        param.Speed      = 5.0f;
-        param.Interval   = 10;
-        param.Count      = 5;
-        param.AngleRange = 60.0f;
-        param.ShotTime   = 10;
-        param.Scale      = asdx::Vector2(1.0f, 0.25f);
-
-        g_DirShotBehavior.SetParam(param);
+        g_OneWayMoveBehavior.SetParam(param);
 
         EnemyManager::SpawnParam spawnParam = {};
         spawnParam.SpriteKind    = ENEMY_BLACK1;
-        spawnParam.pShotBehavior = &g_DirShotBehavior;
+        spawnParam.pMoveBehavior = &g_OneWayMoveBehavior;
 
         enemyMgr.AddType(0, spawnParam);
     }
 
-    // 狙い撃ち方向弾.
+    // 波状移動.
     {
-        AimingDirShotBehavior::Param param = {};
+        WaveMoveBehavior::Param param = {};
+        param.Speed         = 1.0f;
+        param.Amplitude     = 200.0f;
+        param.AngleScale    = 2.0f;
+        param.AngleOffset   = 0.0f;
 
-        param.SpriteKind = LASER_RED14;
-        param.Speed      = 5.0f;
-        param.Interval   = 10;
-        param.Count      = 5;
-        param.AngleRange = 60.0f;
-        param.ShotTime   = 10;
-        param.Scale      = asdx::Vector2(1.0f, 0.25f);
-
-        g_AimingDirShotBehavior.SetParam(param);
+        g_WaveMoveBehavior.SetParam(param);
 
         EnemyManager::SpawnParam spawnParam = {};
         spawnParam.SpriteKind    = ENEMY_BLACK1;
-        spawnParam.pShotBehavior = &g_AimingDirShotBehavior;
+        spawnParam.pMoveBehavior = &g_WaveMoveBehavior;
 
         enemyMgr.AddType(1, spawnParam);
     }
 
-    // 渦巻弾.
+    // 追跡移動.
     {
-        SpiralShotBehavior::Param param = {};
+        AimingMoveBehavior::Param param = {};
+        param.Interval  = 90;
+        param.Speed     = 3.0f;
 
-        param.SpriteKind = LASER_RED14;
-        param.Speed      = 5.0f;
-        param.Count      = 5;
-        param.Angle      = 90.0f;
-        param.AngleRate  = 3.5f;
-        param.Interval   = 60;
-        param.Scale      = asdx::Vector2(1.0f, 0.25f);
-
-        g_SpiralShotBehavior.SetParam(param);
+        g_AimingMoveBahavior.SetParam(param);
 
         EnemyManager::SpawnParam spawnParam = {};
         spawnParam.SpriteKind    = ENEMY_BLACK1;
-        spawnParam.pShotBehavior = &g_SpiralShotBehavior;
+        spawnParam.pMoveBehavior = &g_AimingMoveBahavior;
 
         enemyMgr.AddType(2, spawnParam);
     }
 
     // 敵生成.
     {
-        enemyMgr.Spwan(2, m_Width * 0.5f, 100.0f);
+        m_SpawnType = 2;
+        enemyMgr.Spwan(m_SpawnType, m_Width * 0.5f, 0.0f);
     }
 
     // コマンドの記録を終了.
@@ -364,6 +347,11 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     m_SpriteRenderer.Reset();
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
+    auto& enemyMgr = GetEnemyMgr();
+    if (enemyMgr.GetUsedCount() == 0)
+    {
+        enemyMgr.Spwan(m_SpawnType, m_Width * 0.5f, 0.0f);
+    }
 
     // スクロールスピード設定.
     const auto kMoveSpeedBG0   = 350.0f;
@@ -403,8 +391,9 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     GetEnemyBulletMgr ().Draw(m_SpriteRenderer);
     GetPlayerBulletMgr().Draw(m_SpriteRenderer);
 
-    GetEnemyMgr().Update(m_Width, m_Height);
-    GetEnemyMgr().Draw(m_SpriteRenderer);
+    // 敵制御.
+    enemyMgr.Update(m_Width, m_Height);
+    enemyMgr.Draw(m_SpriteRenderer);
 
     // プレイヤー制御.
     auto& player = GetPlayer();

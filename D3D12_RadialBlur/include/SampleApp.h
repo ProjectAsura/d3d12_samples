@@ -19,10 +19,14 @@
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxSampler.h>
 #include <gfx/asdxRadialBlurEffect.h>
+#include <gfx/asdxTarget.h>
+#include <gfx/asdxSprite.h>
 
 #if ASDX_ENABLE_SOUND
 #include <fw/asdxSound.h>
 #endif
+
+#define USE_COMPUTE_SHADER (0)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,6 +68,12 @@ private:
     asdx::TextureHolder     m_TextureBG;
     asdx::Sampler           m_LinearClamp;
     asdx::RadialBlurEffect  m_RadialBlur;
+    asdx::SpriteRenderer    m_SpriteRenderer;
+#if USE_COMPUTE_SHADER
+    asdx::ComputeTarget     m_BlurTarget;
+#else
+    asdx::ColorTarget       m_BlurTarget;
+#endif
 
     //=========================================================================
     // private methods.

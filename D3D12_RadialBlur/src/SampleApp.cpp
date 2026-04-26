@@ -90,6 +90,13 @@ bool SampleApp::OnInit()
         return false;
     }
 
+    // スプライトレンダラー初期化.
+    if (!m_SpriteRenderer.Init(m_Width, m_Height, 512, 32, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
+    {
+        ELOGA("Error : SpriteRenderer::Init() Failed.");
+        return false;
+    }
+
     // テクスチャ初期化.
     {
         asdx::fs::path input = "../res/textures/Test0.txb";
@@ -120,6 +127,29 @@ bool SampleApp::OnInit()
     {
         ELOGA("Error : RadialBlurEffect::Init() Failed.");
         return false;
+    }
+
+    // ブラーターゲット初期化.
+    {
+        asdx::TargetDesc desc = {};
+        desc.Dimension          = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width              = m_Width;
+        desc.Height             = m_Height;
+        desc.DepthOrArraySize   = 1;
+        desc.MipLevels          = 1;
+        desc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc         = { 1, 0 };
+        desc.InitState          = D3D12_RESOURCE_STATE_COMMON;
+        desc.ClearColor[0]      = 0.0f;
+        desc.ClearColor[1]      = 0.0f;
+        desc.ClearColor[2]      = 0.0f;
+        desc.ClearColor[3]      = 0.0f;
+
+        if (!m_BlurTarget.Init(&desc))
+        {
+            ELOGA("Error : BlurTarget Init Failed.");
+            return false;
+        }
     }
 
     // コマンドの記録を終了.
@@ -156,11 +186,17 @@ void SampleApp::OnTerm()
     // テクスチャマネージャ終了処理.
     asdx::TextureManager::Instance().Term();
 
+    // スプライトレンダラー初期化.
+    m_SpriteRenderer.Term();
+
     // サンプラー解放.
     m_LinearClamp.Term();
 
     // 放射ブラー解放.
     m_RadialBlur.Term();
+
+    // ブラーターゲット解放.
+    m_BlurTarget.Term();
 
     #if ASDX_ENABLE_IMGUI
     {
@@ -212,6 +248,10 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         }
     }
     #endif
+
+    // スプライトレンダラーのフレームリセット処理.
+    m_SpriteRenderer.Reset();
+    m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 }
 
 //-----------------------------------------------------------------------------
@@ -225,15 +265,39 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     m_GfxCmdList.Reset();
     auto pCmd = m_GfxCmdList.GetD3D12CommandList();
 
+    // カラーフィルタ描画.
     {
-        D3D12_RESOURCE_BARRIER barrier = {};
-        barrier.Type                    = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Transition.pResource    = m_ColorTarget[idx].GetResource();
-        barrier.Transition.StateBefore  = D3D12_RESOURCE_STATE_PRESENT;
-        barrier.Transition.StateAfter   = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        pCmd->ResourceBarrier(1, &barrier);
+    #if USE_COMPUTE_SHADER
+        auto inputDesc  = m_TextureBG.GetDesc();
+        auto outputDesc = m_BlurTarget.GetDesc();
+
+        m_BlurTarget.ChangeState(pCmd, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+        m_RadialBlur.Dispatch(pCmd, 
+            outputDesc.Width, outputDesc.Height, m_BlurTarget.GetGpuHandleUAV(),
+            uint32_t(inputDesc.Width), inputDesc.Height, m_TextureBG.GetHandleGPU());
+
+        m_BlurTarget.ChangeState(pCmd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    #else
+        float clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        auto handleRTV = m_BlurTarget.GetCpuHandleRTV();
+
+        m_BlurTarget.ChangeState(pCmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+        pCmd->OMSetRenderTargets(1, &handleRTV, FALSE, nullptr);
+        pCmd->ClearRenderTargetView(handleRTV, clearColor, 0, nullptr);
+        pCmd->RSSetViewports(1, &m_Viewport);
+        pCmd->RSSetScissorRects(1, &m_ScissorRect);
+
+        auto desc = m_TextureBG.GetDesc();
+        m_RadialBlur.Draw(pCmd, uint32_t(desc.Width), desc.Height, m_TextureBG.GetHandleGPU());
+
+        m_BlurTarget.ChangeState(pCmd, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    #endif
     }
 
+    m_ColorTarget[idx].ChangeState(pCmd, D3D12_RESOURCE_STATE_RENDER_TARGET);
     auto handleRTV = m_ColorTarget[idx].GetCpuHandleRTV();
     auto handleDSV = m_DepthTarget.GetCpuHandleDSV();
     pCmd->OMSetRenderTargets(1, &handleRTV, FALSE, &handleDSV);
@@ -242,11 +306,12 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetViewports(1, &m_Viewport);
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
- 
-    // カラーフィルタ描画.
+    // スプライト描画.
     {
-        auto desc = m_TextureBG.GetDesc();
-        m_RadialBlur.Draw(pCmd, uint32_t(desc.Width), desc.Height, m_TextureBG.GetHandleGPU());
+        pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
+        m_SpriteRenderer.SetTexture(m_BlurTarget.GetGpuHandleSRV(), m_LinearClamp.GetHandleGPU());
+        m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
+        m_SpriteRenderer.Draw(pCmd);
     }
 
     #if ASDX_ENABLE_IMGUI
@@ -256,14 +321,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     }
     #endif
 
-    {
-        D3D12_RESOURCE_BARRIER barrier = {};
-        barrier.Type                    = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Transition.pResource    = m_ColorTarget[idx].GetResource();
-        barrier.Transition.StateBefore  = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        barrier.Transition.StateAfter   = D3D12_RESOURCE_STATE_PRESENT;
-        pCmd->ResourceBarrier(1, &barrier);
-    }
+    m_ColorTarget[idx].ChangeState(pCmd, D3D12_RESOURCE_STATE_PRESENT);
 
     // コマンド記録終了.
     pCmd->Close();
@@ -297,9 +355,8 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 //-----------------------------------------------------------------------------
 void SampleApp::OnResize(const asdx::App::ResizeEventArgs& args)
 {
-    // TODO : Implementation.
-    {
-    }
+    // ブラーターゲットリサイズ.
+    m_BlurTarget.Resize(args.Width, args.Height);
 }
 
 //-----------------------------------------------------------------------------

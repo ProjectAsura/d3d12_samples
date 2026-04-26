@@ -47,7 +47,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ASDX_AUTO_LINK;ASDX_ENABLE_IMGUI;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ASDX_AUTO_LINK;ASDX_ENABLE_IMGUI;ASDX_ENABLE_SINGLE_THREAD;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\asdx12\include;$(ProjectDir)..\extenral\asdx12\external\imgui;$(ProjectDir)..\external\asdx12\external\ImGuiZmo;$(ProjectDir)..\external\asdx12\external\implot;$(ProjectDir)..\external\asdx12\external\implot3d;$(ProjectDir)..\external\asdx12\external\ImRing;$(ProjectDir)..\external\asdx12\external\fpng\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -74,7 +74,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ASDX_AUTO_LINK;ASDX_ENABLE_IMGUI;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ASDX_AUTO_LINK;ASDX_ENABLE_IMGUI;ASDX_ENABLE_SINGLE_THREAD;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\include;$(ProjectDir)..\external\asdx12\include;$(ProjectDir)..\extenral\asdx12\external\imgui;$(ProjectDir)..\external\asdx12\external\ImGuiZmo;$(ProjectDir)..\external\asdx12\external\implot;$(ProjectDir)..\external\asdx12\external\implot3d;$(ProjectDir)..\external\asdx12\external\ImRing;$(ProjectDir)..\external\asdx12\external\fpng\src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>

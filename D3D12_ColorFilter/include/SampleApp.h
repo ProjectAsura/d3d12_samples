@@ -19,11 +19,13 @@
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxSampler.h>
 #include <gfx/asdxColorEffect.h>
+#include <gfx/asdxTarget.h>
 
 #if ASDX_ENABLE_SOUND
 #include <fw/asdxSound.h>
 #endif
 
+#define USE_COMPUTE_SHADER (1)
 
 ///////////////////////////////////////////////////////////////////////////////
 // SampleApp class
@@ -46,12 +48,12 @@ public:
     //=========================================================================
 
     //-------------------------------------------------------------------------
-    //! @brief
+    //! @brief      コンストラクタです.
     //-------------------------------------------------------------------------
     SampleApp();
 
     //-------------------------------------------------------------------------
-    //! @brief
+    //! @brief      デストラクタです.
     //-------------------------------------------------------------------------
     ~SampleApp();
 
@@ -59,11 +61,17 @@ private:
     //=========================================================================
     // private variables.
     //=========================================================================
-    asdx::AppCamera     m_Camera;
-    asdx::WaitPoint     m_FrameWaitPoint;
-    asdx::TextureHolder m_TextureBG;
-    asdx::Sampler       m_LinearClamp;
-    asdx::ColorEffect   m_ColorFilter;
+    asdx::AppCamera         m_Camera;
+    asdx::WaitPoint         m_FrameWaitPoint;
+    asdx::TextureHolder     m_TextureBG;
+    asdx::Sampler           m_LinearClamp;
+    asdx::ColorEffect       m_ColorFilter;
+    asdx::SpriteRenderer    m_SpriteRenderer;
+#if USE_COMPUTE_SHADER
+    asdx::ComputeTarget     m_FilterTarget;
+#else
+    asdx::ColorTarget       m_FilterTarget;
+#endif
 
     //=========================================================================
     // private methods.

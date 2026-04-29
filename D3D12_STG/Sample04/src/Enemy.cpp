@@ -8,6 +8,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include "Enemy.h"
+#include "Bullet.h"
 #include <fnd/asdxLogger.h>
 
 
@@ -252,6 +253,35 @@ bool EnemyManager::IsHit(const Entity& entity)
     }
 
     return hit;
+}
+
+//-----------------------------------------------------------------------------
+//      弾との交差判定を行います.
+//-----------------------------------------------------------------------------
+void EnemyManager::CheckHit(BulletManager& bulletManager)
+{
+    auto action = [&](Bullet& bullet)
+    {
+        auto itr = m_UsedList.begin();
+        while(itr != m_UsedList.end())
+        {
+            if (itr->IsHit(bullet))
+            {
+                auto item = &(*itr);
+                itr = m_UsedList.erase(itr);
+                m_FreeList.push_back(item);
+                m_UsedCount--;
+
+                bullet.SetDisable();
+            }
+            else
+            {
+                itr++;
+            }
+        }
+    };
+
+    bulletManager.ForEach(action);
 }
 
 //-----------------------------------------------------------------------------

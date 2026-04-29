@@ -40,6 +40,7 @@ Bullet::Bullet
 , m_AngleRate   (angleRate)
 , m_Speed       (speed)
 , m_SpeedRate   (speedRate)
+, m_Enable      (true)
 { /* DO_NOTHING */ }
 
 //-----------------------------------------------------------------------------
@@ -47,6 +48,10 @@ Bullet::Bullet
 //-----------------------------------------------------------------------------
 void Bullet::Update()
 {
+    // 無効なら更新しない.
+    if (!m_Enable)
+        return;
+
     asdx::Vector2 pos = GetPos();
 
     // 角度をラジアンに変換.
@@ -170,7 +175,7 @@ void BulletManager::Update(uint32_t w, uint32_t h)
         auto itr = m_UsedList.begin();
         while(itr != m_UsedList.end())
         {
-            if (itr->IsOutOfScreen(w, h))
+            if (itr->IsOutOfScreen(w, h) || itr->IsEnable())
             {
                 auto item = &(*itr);
                 itr = m_UsedList.erase(itr);
@@ -191,7 +196,10 @@ void BulletManager::Update(uint32_t w, uint32_t h)
 void BulletManager::Draw(asdx::SpriteRenderer& renderer)
 {
     for(auto& itr : m_UsedList)
-    { itr.Draw(renderer); }
+    {
+        if (!itr.IsEnable())
+            itr.Draw(renderer);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -221,6 +229,7 @@ bool BulletManager::IsHit(const Entity& entity)
 
     return hit;
 }
+
 
 namespace {
 

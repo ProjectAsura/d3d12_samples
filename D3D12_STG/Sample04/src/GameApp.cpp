@@ -216,7 +216,6 @@ bool GameApp::OnInit()
         player.SetPadLock(false);
     }
 
-
     auto& enemyMgr = GetEnemyMgr();
     // エネミーマネージャ初期化.
     if (!enemyMgr.Init(512))
@@ -347,11 +346,26 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     m_SpriteRenderer.Reset();
     m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 
-    auto& enemyMgr = GetEnemyMgr();
-    if (enemyMgr.GetUsedCount() == 0)
+    auto& player       = GetPlayer();
+    auto& enemyMgr     = GetEnemyMgr();
+    auto& enemyBullet  = GetEnemyBulletMgr();
+    auto& playerBullet = GetPlayerBulletMgr();
+
+    auto isGameOver = player.IsGameOver();
+
+    if (!isGameOver)
     {
-        enemyMgr.Spwan(m_SpawnType, m_Width * 0.5f, 0.0f);
+        // プレイヤー弾と敵リストの衝突判定.
+        enemyMgr.CheckHit(playerBullet);
+
+        // プレイヤーダメージ判定.
+        auto playerHit = enemyBullet.IsHit(player) || enemyMgr.IsHit(player);
+        if (playerHit)
+        {
+            player.SetDamage(true);
+        }
     }
+
 
     // スクロールスピード設定.
     const auto kMoveSpeedBG0   = 350.0f;
@@ -386,19 +400,35 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     m_SpriteRenderer.SetTexture(m_SpriteChip.GetHandleGPU(), m_LinearClamp.GetHandleGPU());
 
     // 弾制御.
-    GetEnemyBulletMgr ().Update(m_Width, m_Height);
-    GetPlayerBulletMgr().Update(m_Width, m_Height);
-    GetEnemyBulletMgr ().Draw(m_SpriteRenderer);
-    GetPlayerBulletMgr().Draw(m_SpriteRenderer);
+    enemyBullet .Update(m_Width, m_Height);
+    playerBullet.Update(m_Width, m_Height);
+    enemyBullet .Draw(m_SpriteRenderer);
+    playerBullet.Draw(m_SpriteRenderer);
 
     // 敵制御.
     enemyMgr.Update(m_Width, m_Height);
     enemyMgr.Draw(m_SpriteRenderer);
 
     // プレイヤー制御.
-    auto& player = GetPlayer();
     player.Update(m_Width, m_Height);
     player.Draw(m_SpriteRenderer);
+
+    if (isGameOver)
+    {
+        auto s = 3.0f;
+        auto w = m_Font.CalcWidth(u8"Game Over", s);
+        auto h = m_Font.CalcLineHeight(s);
+        auto x = int(0.5f * (m_Width  - w));
+        auto y = int(0.5f * (m_Height - h));
+        m_SpriteRenderer.SetColor(1.0f, 0.2f, 0.2f, 1.0f);
+        asdx::FontRenderer::Instance().SetScale(s);
+        asdx::FontRenderer::Instance().SetEnableOuter(true);
+        asdx::FontRenderer::Instance().SetOuterColor(1.0f, 1.0f, 1.0f, 1.0f);
+        asdx::FontRenderer::Instance().SetState(m_SpriteRenderer, m_Font);
+        asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, x, y, u8"Game Over");
+
+        m_SpriteRenderer.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
 }
 
 //-----------------------------------------------------------------------------

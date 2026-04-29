@@ -100,7 +100,7 @@ void Player::Update(uint32_t w, uint32_t h)
     // パッド更新.
     m_Pad.UpdateState();
 
-    if (!m_PadLock)
+    if (!m_PadLock && m_Life > 0)
     {
         // パッド操作による移動.
         pos.x += m_MoveSpeed * m_Pad.GetNormalizedThumbLX();
@@ -124,6 +124,16 @@ void Player::Update(uint32_t w, uint32_t h)
             pos,
             asdx::Vector2(0.0f, 0.0f),
             asdx::Vector2(float(w - shipData.W), float(h - shipData.H)));
+    }
+
+    // ダメージを受けたらライフを減らす.
+    if (m_Damage && m_Life > 0)
+    {
+        m_Life--;
+        m_Damage = false;
+
+        // 被爆演出.
+
     }
 
     SetPos(pos);
@@ -159,6 +169,23 @@ void Player::SetLife(uint8_t value)
 uint8_t Player::GetLife() const
 { return m_Life; }
 
+//-----------------------------------------------------------------------------
+//      ダメージフラグを設定します.
+//-----------------------------------------------------------------------------
+void Player::SetDamage(bool value)
+{ m_Damage = value; }
+
+//-----------------------------------------------------------------------------
+//      ダメージフラグを取得します.
+//-----------------------------------------------------------------------------
+bool Player::IsDamage() const
+{ return m_Damage; }
+
+//-----------------------------------------------------------------------------
+//      ゲームオーバー判定を大k内ます.
+//-----------------------------------------------------------------------------
+bool Player::IsGameOver() const
+{ return m_Life == 0; }
 
 namespace {
 

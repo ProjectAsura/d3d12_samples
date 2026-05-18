@@ -65,7 +65,7 @@ private:
     asdx::SpriteRenderer    m_SpriteRenderer;
     asdx::Sampler           m_LinearClamp;
     D3D12_GPU_DESCRIPTOR_HANDLE m_HandleSRV = {};
-    int                         m_Index = 0;
+    int                         m_Index = 1;
 
     //=========================================================================
     // private methods.

@@ -143,9 +143,7 @@ bool SampleApp::OnInit()
         ELOGA("Error : Fade::Init() Failed.");
         return false;
     }
-    asdx::Fade::Instance().SetColor0(asdx::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-    asdx::Fade::Instance().SetColor1(asdx::Vector4(1.0f, 1.0f, 1.0f, 0.0f));
-    asdx::Fade::Instance().SetChangeSec(5.0f);
+    asdx::Fade::Instance().FadeOut(5.0f);
 
     m_HandleSRV = m_TextureBG0.GetHandleGPU();
 
@@ -263,11 +261,14 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
         if (asdx::Fade::Instance().IsComplete())
         {
-            auto color0 = asdx::Fade::Instance().GetColor0();
-            auto color1 = asdx::Fade::Instance().GetColor1();
-            asdx::Fade::Instance().SetColor0(color1);
-            asdx::Fade::Instance().SetColor1(color0);
-            asdx::Fade::Instance().ResetState();
+            if (m_Index % 2 == 0)
+            {
+                asdx::Fade::Instance().FadeOut(5.0f);
+            }
+            else
+            {
+                asdx::Fade::Instance().FadeIn(5.0f);
+            }
 
             // 画像を変更.
             m_Index++;

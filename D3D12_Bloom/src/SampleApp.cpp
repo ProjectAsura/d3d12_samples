@@ -212,6 +212,31 @@ bool SampleApp::OnInit()
         return false;
     }
 
+    // テクスチャ初期化.
+    {
+        asdx::fs::path input = "../res/texture/test.txb";
+        asdx::fs::path path;
+        if (!asdx::SearchFilePath(input, path))
+        {
+            ELOGA("Error : File Not Found. path= %s", input.string().c_str());
+            return false;
+        }
+
+        m_Texture = asdx::TextureManager::Instance().GetOrCreate(path.string().c_str());
+        if (!m_Texture.IsValid())
+        {
+            ELOGA("Error : Texture Load Failed.");
+            return false;
+        }
+    }
+
+    // ブルーム初期化.
+    if (!m_BloomEffct.Init(m_Width, m_Height, m_SwapChainFormat))
+    {
+        ELOGA("Error : BloomEffect::Init() Failed.");
+        return false;
+    }
+
     // コマンドの記録を終了.
     pCmd->Close();
 
@@ -247,6 +272,9 @@ void SampleApp::OnTerm()
     // テクスチャマネージャ終了処理.
     asdx::TextureManager::Instance().Term();
 
+    // ブルーム終了処理.
+    m_BloomEffct.Term();
+
     #if ASDX_ENABLE_IMGUI
     {
         // GUI終了処理.
@@ -273,10 +301,6 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
     }
     #endif
-
-    // TODO : Implementation.
-    {
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -289,6 +313,10 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     // コマンド記録開始.
     m_GfxCmdList.Reset();
     auto pCmd = m_GfxCmdList.GetD3D12CommandList();
+
+    // ブルームエフェクト適用.
+    {
+    }
 
     {
         D3D12_RESOURCE_BARRIER barrier = {};
@@ -307,7 +335,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetViewports(1, &m_Viewport);
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
-    // TODO : 描画処理.
+    // ブルームテクスチャを描画.
     {
     }
 

@@ -15,6 +15,8 @@
 #include <fw/asdxApp.h>
 #include <fw/asdxAppCamera.h>
 #include <gfx/asdxCommandQueue.h>
+#include <gfx/asdxTextureManager.h>
+#include <gfx/asdxBloomEffect.h>
 
 #if ASDX_ENABLE_SOUND
 #include <snd/asdxSoundResource.h>
@@ -57,6 +59,8 @@ private:
     //=========================================================================
     asdx::AppCamera     m_Camera;
     asdx::WaitPoint     m_FrameWaitPoint;
+    asdx::TextureHolder m_Texture;
+    asdx::BloomEffect   m_BloomEffct;
 
     //=========================================================================
     // private methods.

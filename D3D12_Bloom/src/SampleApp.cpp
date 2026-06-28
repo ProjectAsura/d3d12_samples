@@ -48,7 +48,7 @@ bool LoadTexture(const char* path, asdx::TextureHolder& holder)
 //-----------------------------------------------------------------------------
 //      フォントをロードします.
 //-----------------------------------------------------------------------------
-bool LoadFont(ID3D12GraphicsCommandList* pCmd, const char* path, asdx::Font& font)
+bool LoadFont(const char* path, asdx::Font& font)
 {
     asdx::fs::path input = path;
     asdx::fs::path findPath;
@@ -212,6 +212,20 @@ bool SampleApp::OnInit()
         return false;
     }
 
+    // スプライトレンダラー初期化.
+    if (!m_SpriteRenderer.Init(m_Width, m_Height, 512, 32, m_SwapChainFormat, DXGI_FORMAT_UNKNOWN))
+    {
+        ELOGA("Error : SpriteRenderer::Init() Failed.");
+        return false;
+    }
+
+    // サンプラー初期化.
+    if (!m_LinearClamp.Init(&asdx::Sampler::LinearClamp))
+    {
+        ELOGA("Error : Sampler::Init() Failed.");
+        return false;
+    }
+
     // テクスチャ初期化.
     {
         asdx::fs::path input = "../res/texture/test.txb";
@@ -231,11 +245,12 @@ bool SampleApp::OnInit()
     }
 
     // ブルーム初期化.
-    if (!m_BloomEffct.Init(m_Width, m_Height, m_SwapChainFormat))
+    if (!m_BloomEffect.Init(m_Width, m_Height, m_SwapChainFormat))
     {
         ELOGA("Error : BloomEffect::Init() Failed.");
         return false;
     }
+    m_BloomEffect.SetThreshold(0.0f);
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -272,8 +287,14 @@ void SampleApp::OnTerm()
     // テクスチャマネージャ終了処理.
     asdx::TextureManager::Instance().Term();
 
+    // スプライトレンダラー初期化.
+    m_SpriteRenderer.Term();
+
+    // サンプラー解放.
+    m_LinearClamp.Term();
+
     // ブルーム終了処理.
-    m_BloomEffct.Term();
+    m_BloomEffect.Term();
 
     #if ASDX_ENABLE_IMGUI
     {
@@ -301,6 +322,10 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
     }
     #endif
+
+    // スプライトレンダラーのフレームリセット処理.
+    m_SpriteRenderer.Reset();
+    m_SpriteRenderer.SetScreenSize(m_Width, m_Height);
 }
 
 //-----------------------------------------------------------------------------
@@ -316,6 +341,10 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
 
     // ブルームエフェクト適用.
     {
+        auto desc = m_Texture.GetDesc();
+        auto texW = uint32_t(desc.Width);
+        auto texH = uint32_t(desc.Height);
+        m_BloomEffect.Apply(pCmd, texW, texH, m_Texture.GetHandleGPU());
     }
 
     {
@@ -335,8 +364,12 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     pCmd->RSSetViewports(1, &m_Viewport);
     pCmd->RSSetScissorRects(1, &m_ScissorRect);
 
-    // ブルームテクスチャを描画.
+    // スプライト描画.
     {
+        pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
+        m_SpriteRenderer.SetTexture(m_BloomEffect.GetGpuHandleSRV(), m_LinearClamp.GetHandleGPU());
+        m_SpriteRenderer.Add(0, 0, m_Width, m_Height);
+        m_SpriteRenderer.Draw(pCmd);
     }
 
     #if ASDX_ENABLE_IMGUI

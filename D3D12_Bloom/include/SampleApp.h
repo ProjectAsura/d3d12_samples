@@ -17,6 +17,9 @@
 #include <gfx/asdxCommandQueue.h>
 #include <gfx/asdxTextureManager.h>
 #include <gfx/asdxBloomEffect.h>
+#include <gfx/asdxSprite.h>
+#include <gfx/asdxSampler.h>
+
 
 #if ASDX_ENABLE_SOUND
 #include <snd/asdxSoundResource.h>
@@ -57,10 +60,13 @@ private:
     //=========================================================================
     // private variables.
     //=========================================================================
-    asdx::AppCamera     m_Camera;
-    asdx::WaitPoint     m_FrameWaitPoint;
-    asdx::TextureHolder m_Texture;
-    asdx::BloomEffect   m_BloomEffct;
+    asdx::AppCamera         m_Camera;
+    asdx::WaitPoint         m_FrameWaitPoint;
+    asdx::TextureHolder     m_Texture;
+    asdx::BloomEffect       m_BloomEffect;
+    asdx::Sampler           m_LinearClamp;
+    asdx::SpriteRenderer    m_SpriteRenderer;
+
 
     //=========================================================================
     // private methods.

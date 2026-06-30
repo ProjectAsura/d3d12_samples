@@ -131,7 +131,7 @@ bool SampleApp::OnInit()
             return false;
         }
 
-        if (!m_MintMono.Init(pCmd, std::move(binary)))
+        if (!m_MintMono.Init(std::move(binary)))
         {
             ELOGA("Error : Font::Init() Failed.");
             return false;

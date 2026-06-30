@@ -12,7 +12,6 @@
 #include <fnd/asdxPath.h>
 #include <fnd/asdxMisc.h>
 #include <fnd/asdxFileIO.h>
-#include <fw/asdxSound.h>
 #include "Bullet.h"
 
 #if ASDX_DEBUG
@@ -79,9 +78,6 @@ GameApp::~GameApp()
 bool GameApp::OnInit()
 {
     auto pDevice = asdx::GetD3D12Device();
-
-    // サウンドマネージャの初期化.
-    asdx::InitSoundMgr(reinterpret_cast<uintptr_t>(m_hWnd));
 
     // コマンドリストをリセット.
     m_GfxCmdList.Reset();
@@ -181,7 +177,7 @@ bool GameApp::OnInit()
             return false;
         }
 
-        if (!m_Font.Init(pCmd, std::move(binary)))
+        if (!m_Font.Init(std::move(binary)))
         {
             ELOGA("Error : Font::Init() Failed.");
             return false;
@@ -205,7 +201,7 @@ bool GameApp::OnInit()
     // プレイヤー初期化.
     {
         auto& data = GetSpriteData(PLAYER_SHIP2_BLUE);
-        m_Player.Init(0u, PLAYER_SHIP2_BLUE, m_Width * 0.5f - data.W * 0.5f, m_Height - data.H);
+        m_Player.Init(0u, PLAYER_SHIP2_BLUE, float(m_Width) * 0.5f - data.W * 0.5f, float(m_Height) - data.H);
         m_Player.SetPadLock(false);
     }
 
@@ -261,9 +257,6 @@ void GameApp::OnTerm()
     GetEnemyBulletMgr ().Term();
 
     m_Font.Term();
-
-    // サウンドマネージャの終了処理.
-    asdx::TermSoundMgr();
 
     #if ASDX_ENABLE_IMGUI
     {
@@ -326,7 +319,7 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
     bool hit1 = false;
     bool hit2 = false;
     {
-        m_Rad += args.ElapsedTimeSec * 0.5f;
+        m_Rad += float(args.ElapsedTimeSec) * 0.5f;
         if (m_Rad >= asdx::F_2PI)
         { m_Rad = 0.0f; }
 
@@ -367,13 +360,13 @@ void GameApp::OnFrameMove(const base::FrameEventArgs& args)
         asdx::FontRenderer::Instance().SetOuterColor(1.0f, 0.0f, 0.0f, 1.0f);
 
         if (hit0)
-            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy0.GetPosX() + 80.0f, m_Enemy0.GetPosY() + 80.0f, u8"Hit!");
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, int(m_Enemy0.GetPosX() + 80.0f), int(m_Enemy0.GetPosY() + 80.0f), u8"Hit!");
 
         if (hit1)
-            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy1.GetPosX() + 80.0f, m_Enemy1.GetPosY() + 80.0f, u8"Hit!");
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, int(m_Enemy1.GetPosX() + 80.0f), int(m_Enemy1.GetPosY() + 80.0f), u8"Hit!");
 
         if (hit2)
-            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, m_Enemy2.GetPosX() + 80.0f, m_Enemy2.GetPosY() + 80.0f, u8"Hit!");
+            asdx::FontRenderer::Instance().Add(m_SpriteRenderer, m_Font, int(m_Enemy2.GetPosX() + 80.0f), int(m_Enemy2.GetPosY() + 80.0f), u8"Hit!");
     }
 }
 
@@ -516,17 +509,4 @@ void GameApp::OnMsgProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
     ASDX_UNUSED(hWnd);
     ASDX_UNUSED(wp);
     ASDX_UNUSED(lp);
-
-    switch(msg)
-    {
-    case MM_MCINOTIFY:
-        {
-            // サウンドマネージャのコールバック.
-            asdx::OnSoundMsg(uint32_t(lp), uint32_t(wp));
-        }
-        break;
-
-    default:
-        break;
-    }
 }

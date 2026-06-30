@@ -12,7 +12,6 @@
 #include <fnd/asdxPath.h>
 #include <fnd/asdxMisc.h>
 #include <fnd/asdxFileIO.h>
-#include <fw/asdxSound.h>
 #include "Bullet.h"
 #include "Enemy.h"
 #include "MoveBehavior.h"
@@ -86,9 +85,6 @@ GameApp::~GameApp()
 bool GameApp::OnInit()
 {
     auto pDevice = asdx::GetD3D12Device();
-
-    // サウンドマネージャの初期化.
-    asdx::InitSoundMgr(reinterpret_cast<uintptr_t>(m_hWnd));
 
     // コマンドリストをリセット.
     m_GfxCmdList.Reset();
@@ -188,7 +184,7 @@ bool GameApp::OnInit()
             return false;
         }
 
-        if (!m_Font.Init(pCmd, std::move(binary)))
+        if (!m_Font.Init(std::move(binary)))
         {
             ELOGA("Error : Font::Init() Failed.");
             return false;
@@ -318,9 +314,6 @@ void GameApp::OnTerm()
     GetEnemyBulletMgr ().Term();
 
     m_Font.Term();
-
-    // サウンドマネージャの終了処理.
-    asdx::TermSoundMgr();
 
     #if ASDX_ENABLE_IMGUI
     {
@@ -570,17 +563,4 @@ void GameApp::OnMsgProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
     ASDX_UNUSED(hWnd);
     ASDX_UNUSED(wp);
     ASDX_UNUSED(lp);
-
-    switch(msg)
-    {
-    case MM_MCINOTIFY:
-        {
-            // サウンドマネージャのコールバック.
-            asdx::OnSoundMsg(uint32_t(lp), uint32_t(wp));
-        }
-        break;
-
-    default:
-        break;
-    }
 }

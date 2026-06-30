@@ -19,7 +19,7 @@ constexpr int kSpriteChipH = 1024;  //!< スプライトチップの縦幅.
 #define UV(x, y) asdx::Vector2(float(x)/float(kSpriteChipW), float(y)/float(kSpriteChipH))
 
 // スプライトデータ
-#define SPRITE_ENTRY(tag, x, y, w, h) { x, y, w, h, UV(x, y+h), UV(x+w, y) }
+#define SPRITE_ENTRY(tag, x, y, w, h) { x, y, w, h, UV(x, y), UV(x+w, y+h) }
 
 // 各スプライトデータの定義.
 static const SpriteData kSpriteData[] = {

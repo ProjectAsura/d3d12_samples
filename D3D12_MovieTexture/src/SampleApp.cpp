@@ -170,7 +170,7 @@ bool SampleApp::OnInit()
             return false;
         }
 
-        if (!m_Font.Init(pCmd, std::move(bin)))
+        if (!m_Font.Init(std::move(bin)))
         {
             ELOGA("Error : Font::Init() Failed.");
             return false;

@@ -223,17 +223,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(300, 230), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("カラーフィルタ")))
         {
             asdx::ColorEffect::Param param = m_ColorFilter.GetParam();
 
-            ImGui::DragFloat3(ASDX_U8("彩度"), &param.Saturation.x, 0.1f);
-            ImGui::DragFloat(ASDX_U8("明度"), &param.Brightness, 0.01f);
-            ImGui::DragFloat(ASDX_U8("コントラスト"), &param.Contrast, 0.01f);
+            ImGui::DragFloat3(ASDX_U8("彩度"), &param.Saturation.x, 0.001f, 0.0f, 1.0f);
+            ImGui::DragFloat(ASDX_U8("明度"), &param.Brightness, 0.001f, 0.0f, 10.0f);
+            ImGui::DragFloat(ASDX_U8("コントラスト"), &param.Contrast, 0.001f, 0.0f, 1.0f);
             ImGui::DragFloat(ASDX_U8("色相"), &param.HueDegree, 0.1f, 0.0f, 360.0f);
-            ImGui::DragFloat(ASDX_U8("セピアトーン"), &param.SepiaTone, 0.01f, 0.0f, 1.0f);
-            ImGui::DragFloat(ASDX_U8("グレースケール"), &param.GrayScale, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat(ASDX_U8("セピアトーン"), &param.SepiaTone, 0.001f, 0.0f, 1.0f);
+            ImGui::DragFloat(ASDX_U8("グレースケール"), &param.GrayScale, 0.001f, 0.0f, 1.0f);
+            ImGui::DragFloat(ASDX_U8("ホワイトバランス"), &param.WhiteBalance, 1.0f, 1800.0f, 16000.0f);
             ImGui::Checkbox(ASDX_U8("色反転"), &param.Reverse);
 
             if (ImGui::Button(ASDX_U8("リセット")))

@@ -234,7 +234,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             ImGui::DragFloat(ASDX_U8("セピアトーン"), &param.SepiaTone, 0.001f, 0.0f, 1.0f);
             ImGui::DragFloat(ASDX_U8("グレースケール"), &param.GrayScale, 0.001f, 0.0f, 1.0f);
             ImGui::DragFloat(ASDX_U8("ホワイトバランス"), &param.WhiteBalance, 1.0f, 1700.0f, 25000.0f);
-            ImGui::DragFloat(ASDX_U8("ティント"), &param.Tint, 0.001f, -1.0f, 1.0f);
+            ImGui::Checkbox(ASDX_U8("白黒化"), &param.BlackAndWhite);
             ImGui::Checkbox(ASDX_U8("色反転"), &param.Reverse);
 
             if (ImGui::Button(ASDX_U8("リセット")))

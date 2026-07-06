@@ -42,7 +42,7 @@ SampleApp::SampleApp()
 
 #if ASDX_DEBUG
     m_DeviceDesc.EnableDebug   = true;
-    m_DeviceDesc.EnableCapture = true;
+    //m_DeviceDesc.EnableCapture = true;
 #endif
 }
 
@@ -222,7 +222,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(300, 280), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(300, 340), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("カラーフィルタ")))
         {
             asdx::ColorEffect::Param param = m_ColorFilter.GetParam();
@@ -236,6 +236,8 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             ImGui::DragFloat(ASDX_U8("ホワイトバランス"), &param.WhiteBalance, 1.0f, 1700.0f, 25000.0f);
             ImGui::Checkbox(ASDX_U8("白黒化"), &param.BlackAndWhite);
             ImGui::Checkbox(ASDX_U8("色反転"), &param.Reverse);
+            ImGui::DragFloat3(ASDX_U8("加算カラー"), &param.AddColor.x, 0.001f);
+            ImGui::DragFloat3(ASDX_U8("乗算カラー"), &param.MulColor.x, 0.001f);
 
             if (ImGui::Button(ASDX_U8("リセット")))
             { param.Reset(); }

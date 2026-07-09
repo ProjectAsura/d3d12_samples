@@ -18,11 +18,6 @@
 #include "../external/asdx12/external/imgui/imgui.h"
 
 
-namespace {
-
-
-} // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // SampleApp class
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,7 +194,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         ImGui::SetNextWindowSize(ImVec2(250, 110), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("ガウスブラー")))
         {
-            ImGui::DragFloat(ASDX_U8("分散"), &m_Dispersion, 0.01f, 0.01f, 100.0f);
+            ImGui::DragFloat(ASDX_U8("ブラーの強さ"), &m_Dispersion, 0.01f, 1.0f, 10.0f);
 
             if (ImGui::Button(ASDX_U8("リセット")))
             { m_Dispersion = 1.0f; }

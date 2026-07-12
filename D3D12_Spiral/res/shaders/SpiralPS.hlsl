@@ -26,6 +26,8 @@ cbuffer CbParam : register(b0)
 {
     float2 Offset;
     float2 Scale;
+    float3 Color;
+    float  Alpha;
 };
 
 //-----------------------------------------------------------------------------
@@ -50,5 +52,12 @@ float4 main(const VSOutput input) : SV_TARGET0
     sincos(rot, s, c);
     uv = mul(uv, float2x2(c, -s, s, c)) + 0.5f;
 
-    return ColorMap.SampleLevel(LinearMirror, uv, 0.0f);
+    // テクスチャをサンプリング.
+    float3 texel = ColorMap.SampleLevel(LinearMirror, uv, 0.0f).rgb;
+
+    // カラーをブレンド.
+    float3 result = lerp(texel, Color, Alpha);
+
+    // 結果を出力.
+    return float4(result, 1.0f);
 }

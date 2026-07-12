@@ -29,6 +29,8 @@ struct Param
 {
     asdx::Vector2 Offset;
     asdx::Vector2 Scale;
+    asdx::Vector3 Color;
+    float         Alpha;
 };
 
 } // namespace
@@ -147,7 +149,7 @@ bool SampleApp::OnInit()
 
         D3D12_ROOT_PARAMETER param[2] = {};
         param[0].ParameterType              = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-        param[0].Constants.Num32BitValues   = 4;
+        param[0].Constants.Num32BitValues   = 8;
         param[0].Constants.ShaderRegister   = 0;
         param[0].Constants.RegisterSpace    = 0;
         param[0].ShaderVisibility           = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -295,6 +297,16 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     auto period = int(1.0 / double(kSpeed));
     auto change = false;
+    if (m_Counter < period / 2)
+    {
+        m_Alpha = float(m_Counter) / float(period * 0.5f);
+    }
+    else if (m_Counter >= period / 2)
+    {
+        auto counter = m_Counter - (period / 2);
+        m_Alpha = 1.0f - (float(counter) / (float(period * 0.5f)));
+    }
+
     if (m_Counter == period / 2)
     {
         change = true;
@@ -347,10 +359,12 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         Param param = {};
         param.Offset = m_ScrollOffset;
         param.Scale  = m_ScrollScale;
+        param.Color  = m_Color;
+        param.Alpha  = m_Alpha * m_Alpha;
 
         pCmd->SetGraphicsRootSignature(m_RootSignature.GetPtr());
         pCmd->SetPipelineState(m_PipelineState.GetPtr());
-        pCmd->SetGraphicsRoot32BitConstants(0, 4, &param, 0);
+        pCmd->SetGraphicsRoot32BitConstants(0, 8, &param, 0);
         pCmd->SetGraphicsRootDescriptorTable(1, m_HandleSRV);
         asdx::DrawQuad(pCmd);
     }

@@ -70,6 +70,8 @@ private:
 
     asdx::Vector2 m_ScrollOffset;
     asdx::Vector2 m_ScrollScale;
+    asdx::Vector3 m_Color   = asdx::Vector3(1.0f, 1.0f, 1.0f);
+    float         m_Alpha   = 0.0f;
     int           m_Counter = 0;
     uint8_t       m_Index   = 0;
 

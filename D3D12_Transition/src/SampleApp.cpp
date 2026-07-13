@@ -74,7 +74,7 @@ SampleApp::SampleApp()
 
 #if ASDX_DEBUG
     m_DeviceDesc.EnableDebug   = true;
-    m_DeviceDesc.EnableCapture = true;
+    //m_DeviceDesc.EnableCapture = true;
 #endif
 }
 
@@ -320,7 +320,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
     m_SpriteRenderer.Reset();
 
-    m_TimerSec += args.ElapsedTimeSec;
+    m_TimerSec += float(args.ElapsedTimeSec);
     if (m_TransitionSec <= m_TimerSec)
     {
         m_TimerSec = 0.0f;

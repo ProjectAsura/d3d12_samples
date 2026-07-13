@@ -209,7 +209,6 @@ float4 main(const VSOutput input) : SV_TARGET0
         break;
     }
 
-
     float4 result = (sdf <= 0.0f) ? 0.0f.xxxx : Color;
     result.w = 1.0f - saturate(SdfAntiAlias(input.TexCoord, sdf));
 

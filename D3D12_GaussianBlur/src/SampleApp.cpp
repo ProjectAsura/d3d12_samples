@@ -38,7 +38,7 @@ SampleApp::SampleApp()
 
 #if ASDX_DEBUG
     m_DeviceDesc.EnableDebug   = true;
-    m_DeviceDesc.EnableCapture = true;
+    //m_DeviceDesc.EnableCapture = true;
 #endif
 }
 
@@ -46,8 +46,7 @@ SampleApp::SampleApp()
 //      デストラクタです.
 //-----------------------------------------------------------------------------
 SampleApp::~SampleApp()
-{
-}
+{ /* DO_NOTHING */ }
 
 //-----------------------------------------------------------------------------
 //      初期化処理です.

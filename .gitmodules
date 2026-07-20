@@ -40,3 +40,6 @@
 [submodule "D3D12_FilmGrain/external/asdx12"]
 	path = D3D12_FilmGrain/external/asdx12
 	url = https://github.com/ProjectAsura/asdx12.git
+[submodule "D3D12_Vignetting/external/asdx12"]
+	path = D3D12_Vignetting/external/asdx12
+	url = https://github.com/ProjectAsura/asdx12.git

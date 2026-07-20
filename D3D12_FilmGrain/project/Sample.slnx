@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../external/asdx12/project/asdx12_2026.vcxproj" Id="2218c996-fe59-4e14-988f-c6a7250d5978">
+    <BuildType Solution="Debug|*" Project="DebugMT" />
+    <BuildType Solution="Release|*" Project="ReleaseMT" />
+  </Project>
+  <Project Path="Sample.vcxproj" Id="8ce8e634-b227-41d8-b1a8-97e71ed308ab" />
+</Solution>

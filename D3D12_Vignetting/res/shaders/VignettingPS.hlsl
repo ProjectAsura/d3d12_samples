@@ -25,9 +25,8 @@ struct VSOutput
 ///////////////////////////////////////////////////////////////////////////////
 cbuffer CbParam : register(b0)
 {
-    float   AspectRatio;
     float   Strength;
-    float2  Reserved;
+    float3  Reserved;
 };
 
 //-----------------------------------------------------------------------------
@@ -42,16 +41,13 @@ Texture2D ColorMap  : register(t0);
 float ComputeNaturalVignetting
 (
     float2  uv,                 // テクスチャ座標.
-    float   aspectRatio,        // アスペクト比.
     float2  sensorSize_mm,      // センサーサイズ(単位:mm)
     float   focalLength_mm,     // 焦点距離(単位:mm)
     float   strength            // ヴィネットの強さ.
 )
 {
     // センサー中心を原点とした実寸(mm)
-    float2 p = (uv - 0.5f);
-    p.x *= aspectRatio;
-    p *= sensorSize_mm;
+    float2 p = (uv - 0.5f) * sensorSize_mm;
 
     // 2乗値を求める.
     const float r2 = dot(p, p);
@@ -74,11 +70,10 @@ float4 main(const VSOutput input) : SV_TARGET0
     // ヴィネッティングを計算
     float attenuation = ComputeNaturalVignetting(
         input.TexCoord,
-        AspectRatio,
         float2(36.0f, 24.0f),   // フルサイズセンサー (36mm x 24mm)
         35.0f,                  // 35mm レンズ.
         Strength);
- 
+
     // ヴィネッティングを適用し弱める.
     color.rgb *= attenuation;
 

@@ -29,9 +29,8 @@ namespace {
 ///////////////////////////////////////////////////////////////////////////////
 struct Param
 {
-    float   AspectRatio;
     float   Strength;
-    float   Reserved[2];
+    float   Reserved[3];
 };
 
 } // namespace
@@ -305,12 +304,11 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
     // ヴィネッティング描画.
     {
         Param param = {};
-        param.AspectRatio = float(m_Width) / float(m_Height);
-        param.Strength    = m_Strength;
+        param.Strength = m_Strength;
 
         pCmd->SetGraphicsRootSignature(m_RootSignature.GetPtr());
         pCmd->SetPipelineState(m_PipelineState.GetPtr());
-        pCmd->SetGraphicsRoot32BitConstants(0, 2, &param, 0);
+        pCmd->SetGraphicsRoot32BitConstants(0, 1, &param, 0);
         pCmd->SetGraphicsRootDescriptorTable(1, m_TextureBG.GetHandleGPU());
         asdx::DrawQuad(pCmd);
     }

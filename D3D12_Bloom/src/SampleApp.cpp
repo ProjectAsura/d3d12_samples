@@ -151,7 +151,7 @@ bool LoadOgg(const char* path, asdx::SoundResource& resource, bool loop = false)
 SampleApp::SampleApp()
 : asdx::App(L"Sample", 1920, 1080, nullptr, nullptr, nullptr)
 {
-    m_SwapChainFormat    = DXGI_FORMAT_R8G8B8A8_UNORM;
+    m_SwapChainFormat    = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     m_DepthStencilFormat = DXGI_FORMAT_D32_FLOAT;
 
     m_DeviceDesc.MaxShaderResourceCount = 8192;
@@ -245,7 +245,7 @@ bool SampleApp::OnInit()
     }
 
     // ブルーム初期化.
-    if (!m_BloomEffect.Init(m_Width, m_Height, m_SwapChainFormat))
+    if (!m_BloomEffect.Init(m_Width, m_Height, DXGI_FORMAT_R16G16B16A16_FLOAT))
     {
         ELOGA("Error : BloomEffect::Init() Failed.");
         return false;
@@ -344,7 +344,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         auto desc = m_Texture.GetDesc();
         auto texW = uint32_t(desc.Width);
         auto texH = uint32_t(desc.Height);
-        m_BloomEffect.Apply(pCmd, texW, texH, m_Texture.GetHandleGPU());
+        m_BloomEffect.Dispatch(pCmd, texW, texH, m_Texture.GetHandleGPU());
     }
 
     {

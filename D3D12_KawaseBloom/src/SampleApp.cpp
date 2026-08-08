@@ -16,6 +16,7 @@
 #include <gfx/asdxFont.h>
 #include <edit/asdxGuiMgr.h>
 #include <gfx/asdxGfxMisc.h>
+#include "../external/asdx12/external/imgui/imgui.h"
 
 #if ASDX_ENABLE_SOUND
 #include <snd/asdxSoundEngine.h>
@@ -246,7 +247,7 @@ bool SampleApp::OnInit()
     }
 
     // ブルーム初期化.
-    if (!m_BloomEffect.Init(m_Width, m_Height, DXGI_FORMAT_R16G16B16A16_FLOAT))
+    if (!m_BloomEffect.Init(m_Width, m_Height, DXGI_FORMAT_R11G11B10_FLOAT))
     {
         ELOGA("Error : BloomEffect::Init() Failed.");
         return false;
@@ -322,6 +323,27 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
     {
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
+
+        ImGui::SetNextWindowSize(ImVec2(260, 110), ImGuiCond_Once);
+        if (ImGui::Begin(ASDX_U8("制御パラメータ")))
+        {
+            auto threshold = m_BloomEffect.GetThreshold();
+            auto strength  = m_BloomEffect.GetBlurStrength();
+
+            if (ImGui::DragFloat(ASDX_U8("Theshold"), &threshold, 0.01f, 0.0f, 100.0f))
+                m_BloomEffect.SetThreshold(threshold);
+
+            if (ImGui::DragFloat(ASDX_U8("Strength"), &strength, 0.001f, 0.01f, 10.0f))
+                m_BloomEffect.SetBlurStrength(strength);
+
+            if (ImGui::Button(ASDX_U8("リセット")))
+            {
+                m_BloomEffect.SetThreshold(0.0f);
+                m_BloomEffect.SetBlurStrength(3.0f);
+            }
+
+            ImGui::End();
+        }
     }
     #endif
 

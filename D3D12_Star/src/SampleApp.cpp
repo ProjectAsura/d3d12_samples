@@ -141,6 +141,20 @@ bool LoadOgg(const char* path, asdx::SoundResource& resource, bool loop = false)
 
 #endif
 
+static const char* kStarTypes[] = {
+    "DISABLE",
+    "CAMERA",
+    "CEAP_CAMERA",
+    "CROSS_SCREEN",
+    "CROSS_SCREEN_SPECTRAL",
+    "SNOW_CROSS",
+    "SNOW_CROSS_SPECTRAL",
+    "SUNNY_CROSS",
+    "SUNNY_CROSS_SPECTRAL",
+    "CINEMA_VERTICAL",
+    "CINEMA_HORIZONTAL",
+};
+
 } // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -164,7 +178,7 @@ SampleApp::SampleApp()
 
 #if ASDX_DEBUG
     m_DeviceDesc.EnableDebug   = true;
-    m_DeviceDesc.EnableCapture = true;
+    //m_DeviceDesc.EnableCapture = true;
 #endif
 }
 
@@ -254,7 +268,7 @@ bool SampleApp::OnInit()
         return false;
     }
     m_BloomEffect.SetThreshold(0.0f);
-    m_BloomEffect.SetBlurStrength(3.0f);
+    m_BloomEffect.SetBlurStrength(5.0f);
 
     // 光芒初期化.
     if (!m_StarEffect.Init(m_Width, m_Height, DXGI_FORMAT_R11G11B10_FLOAT))
@@ -262,7 +276,8 @@ bool SampleApp::OnInit()
         ELOGA("Error : StarEffect::Init() Failed.");
         return false;
     }
-    m_StarEffect.SetType(asdx::StarEffect::SNOW_CROSS_SPECTRAL);
+    m_StarEffect.SetType(asdx::StarEffect::CROSS_SCREEN_SPECTRAL);
+    m_StarEffect.SetThreshold(0.875);
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -333,22 +348,41 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(260, 110), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 160), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
-            auto threshold = m_BloomEffect.GetThreshold();
-            auto strength  = m_BloomEffect.GetBlurStrength();
+            // ブルーム設定.
+            {
+                auto threshold = m_BloomEffect.GetThreshold();
+                auto strength  = m_BloomEffect.GetBlurStrength();
 
-            if (ImGui::DragFloat(ASDX_U8("Theshold"), &threshold, 0.01f, 0.0f, 100.0f))
-                m_BloomEffect.SetThreshold(threshold);
+                if (ImGui::DragFloat(ASDX_U8("Bloom Theshold"), &threshold, 0.01f, 0.0f, 100.0f))
+                    m_BloomEffect.SetThreshold(threshold);
 
-            if (ImGui::DragFloat(ASDX_U8("Strength"), &strength, 0.001f, 0.01f, 10.0f))
-                m_BloomEffect.SetBlurStrength(strength);
+                if (ImGui::DragFloat(ASDX_U8("Bloom Strength"), &strength, 0.001f, 0.01f, 10.0f))
+                    m_BloomEffect.SetBlurStrength(strength);
+
+            }
+
+            // 光芒設定.
+            {
+                auto threshold = m_StarEffect.GetThreshold();
+                int type      = int(m_StarEffect.GetType());
+
+                if (ImGui::Combo(ASDX_U8("Star Type"), &type, kStarTypes, _countof(kStarTypes)))
+                    m_StarEffect.SetType(asdx::StarEffect::TYPE(type));
+
+                if (ImGui::DragFloat(ASDX_U8("Star Threshold"), &threshold, 0.01f, 0.0f, 100.0f))
+                    m_StarEffect.SetThreshold(threshold);
+            }
 
             if (ImGui::Button(ASDX_U8("リセット")))
             {
                 m_BloomEffect.SetThreshold(0.0f);
-                m_BloomEffect.SetBlurStrength(3.0f);
+                m_BloomEffect.SetBlurStrength(5.0f);
+
+                m_StarEffect.SetThreshold(0.875);
+                m_StarEffect.SetType(asdx::StarEffect::TYPE::CROSS_SCREEN_SPECTRAL);
             }
 
             ImGui::End();

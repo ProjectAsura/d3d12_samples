@@ -129,7 +129,7 @@ bool SampleApp::OnInit()
         return false;
     }
 
-    m_MosaicEffect.SetParam(m_Width * 0.025f);
+    m_MosaicEffect.SetScale(0.05f);
 
     // ブラーターゲット初期化.
     {
@@ -225,13 +225,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(250, 110), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(250, 80), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
-            auto block = m_MosaicEffect.GetParam();
-            if (ImGui::DragFloat(ASDX_U8("ブロック"), &block, 1.0f, 0.01f, float(m_Width)))
+            auto scale = m_MosaicEffect.GetScale();
+            if (ImGui::DragFloat(ASDX_U8("スケール"), &scale, 0.0001f, 0.001f, 1.0f))
             {
-                m_MosaicEffect.SetParam(block);
+                m_MosaicEffect.SetScale(scale);
+            }
+
+            if (ImGui::Button(ASDX_U8("リセット")))
+            {
+                m_MosaicEffect.SetScale(0.05f);
             }
 
             ImGui::End();
@@ -268,6 +273,8 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
             uint32_t(outputDesc.Width),
             outputDesc.Height,
             m_BlurTarget.GetGpuHandleUAV(),
+            uint32_t(inputDesc.Width),
+            inputDesc.Height,
             m_TextureBG.GetHandleGPU());
 
         m_BlurTarget.UAVBarrier(pCmd);

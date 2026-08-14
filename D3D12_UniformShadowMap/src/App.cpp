@@ -849,7 +849,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         if (m_ShowShadowMap)
         {
             auto drawSize = 400;
-            m_SpriteRenderer.SetTexture(m_ShadowMap.GetGpuHandleSRV(), m_LinerClamp.GetGpuHandle());
+            m_SpriteRenderer.SetTexture(m_ShadowMap.GetGpuHandleSRV(), m_LinerClamp.GetHandleGPU());
             m_SpriteRenderer.Add(0, m_Height - drawSize, drawSize, drawSize);
         }
     }
@@ -993,7 +993,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         m_LineRenderer.Draw(pCmd);
 
         // スプライト描画.
-        m_SpriteRenderer.SetPipelineState(pCmd);
+        m_SpriteRenderer.SetPipelineState(m_SpriteRenderer.GetDefaultState());
         m_SpriteRenderer.Draw(pCmd);
 
         auto addressGPU = m_ShapeParams.Update();

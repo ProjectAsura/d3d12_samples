@@ -112,14 +112,6 @@ float3 EvaluateIBLDiffuse(float3 N)
 }
 
 //-----------------------------------------------------------------------------
-//      線形ラフネスからミップレベルを求めます.
-//-----------------------------------------------------------------------------
-float RoughnessToMipLevel(float linearRoughness, float mipCount)
-{
-    return (mipCount - 1) * linearRoughness;
-}
-
-//-----------------------------------------------------------------------------
 //      スペキュラーIBLを評価します.
 //-----------------------------------------------------------------------------
 float3 EvaluateIBLSpecular
@@ -266,7 +258,7 @@ float4 main(const VSOutput input) : SV_TARGET0
     float3 lit = 0;
     lit += EvaluateDirectLight(N, V, L, Kd, Ks, orm.y) * (DirLightColor * DirLightIntensity) * shadow;
     lit += EvaluateIBLDiffuse(N) * Kd * orm.x;
-    lit += EvaluateIBLSpecular(NoV, N, R, Ks, orm.y) * orm.x;
+    lit += EvaluateIBLSpecular(NoV, N, R, Ks, orm.y) * CalcSpecularOcclusion(NoV, orm.x, orm.y * orm.y);
     lit += EmissiveMap.Sample(LinearWrap, input.TexCoord).xyz * Emissive;
     output.rgb = lit;
     output.a   = bc.a;

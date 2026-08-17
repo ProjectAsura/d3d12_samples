@@ -270,14 +270,15 @@ bool SampleApp::OnInit()
     m_BloomEffect.SetThreshold(0.0f);
     m_BloomEffect.SetBlurStrength(5.0f);
 
-    // 光芒初期化.
+    // クロスフィルタ初期化.
     if (!m_StarEffect.Init(m_Width, m_Height, DXGI_FORMAT_R11G11B10_FLOAT))
     {
         ELOGA("Error : StarEffect::Init() Failed.");
         return false;
     }
     m_StarEffect.SetType(asdx::StarEffect::CROSS_SCREEN_SPECTRAL);
-    m_StarEffect.SetThreshold(0.875);
+    m_StarEffect.SetThreshold(0.65f);
+    m_StarEffect.SetAttenuation(0.85f);
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -323,6 +324,9 @@ void SampleApp::OnTerm()
     // ブルーム終了処理.
     m_BloomEffect.Term();
 
+    // クロスフィルタ終了.
+    m_StarEffect.Term();
+
     #if ASDX_ENABLE_IMGUI
     {
         // GUI終了処理.
@@ -348,7 +352,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(360, 160), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 180), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
             // ブルーム設定.
@@ -364,16 +368,20 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
 
             }
 
-            // 光芒設定.
+            // クロスフィルタ設定.
             {
-                auto threshold = m_StarEffect.GetThreshold();
-                int type      = int(m_StarEffect.GetType());
+                auto threshold   = m_StarEffect.GetThreshold();
+                int  type        = int(m_StarEffect.GetType());
+                auto attenuation = m_StarEffect.GetAttenuation();
 
                 if (ImGui::Combo(ASDX_U8("Star Type"), &type, kStarTypes, _countof(kStarTypes)))
                     m_StarEffect.SetType(asdx::StarEffect::TYPE(type));
 
                 if (ImGui::DragFloat(ASDX_U8("Star Threshold"), &threshold, 0.01f, 0.0f, 100.0f))
                     m_StarEffect.SetThreshold(threshold);
+
+                if (ImGui::DragFloat(ASDX_U8("Attenuation"), &attenuation, 0.01f, 0.0f, 1.0f))
+                    m_StarEffect.SetAttenuation(attenuation);
             }
 
             if (ImGui::Button(ASDX_U8("リセット")))
@@ -381,8 +389,9 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
                 m_BloomEffect.SetThreshold(0.0f);
                 m_BloomEffect.SetBlurStrength(5.0f);
 
-                m_StarEffect.SetThreshold(0.875);
+                m_StarEffect.SetThreshold(0.65f);
                 m_StarEffect.SetType(asdx::StarEffect::TYPE::CROSS_SCREEN_SPECTRAL);
+                m_StarEffect.SetAttenuation(0.85f);
             }
 
             ImGui::End();
@@ -414,7 +423,7 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         m_BloomEffect.Dispatch(pCmd, texW, texH, m_Texture.GetHandleGPU());
     }
 
-    // スターエフェクト適用.
+    // クロスフィルタ適用.
     {
         auto desc = m_Texture.GetDesc();
         auto texW = uint32_t(desc.Width);

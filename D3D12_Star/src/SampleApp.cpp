@@ -352,13 +352,14 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(360, 180), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 220), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
             // ブルーム設定.
             {
                 auto threshold = m_BloomEffect.GetThreshold();
                 auto strength  = m_BloomEffect.GetBlurStrength();
+                auto exposure  = m_BloomEffect.GetExposure();
 
                 if (ImGui::DragFloat(ASDX_U8("Bloom Theshold"), &threshold, 0.01f, 0.0f, 100.0f))
                     m_BloomEffect.SetThreshold(threshold);
@@ -366,6 +367,8 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
                 if (ImGui::DragFloat(ASDX_U8("Bloom Strength"), &strength, 0.001f, 0.01f, 10.0f))
                     m_BloomEffect.SetBlurStrength(strength);
 
+                if (ImGui::DragFloat(ASDX_U8("Bloom Exposure"), &exposure, 0.01f, 0.0f, 1000.0f))
+                    m_BloomEffect.SetExposure(exposure);
             }
 
             // クロスフィルタ設定.
@@ -373,6 +376,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
                 auto threshold   = m_StarEffect.GetThreshold();
                 int  type        = int(m_StarEffect.GetType());
                 auto attenuation = m_StarEffect.GetAttenuation();
+                auto exposure    = m_StarEffect.GetExposure();
 
                 if (ImGui::Combo(ASDX_U8("Star Type"), &type, kStarTypes, _countof(kStarTypes)))
                     m_StarEffect.SetType(asdx::StarEffect::TYPE(type));
@@ -380,18 +384,23 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
                 if (ImGui::DragFloat(ASDX_U8("Star Threshold"), &threshold, 0.01f, 0.0f, 100.0f))
                     m_StarEffect.SetThreshold(threshold);
 
-                if (ImGui::DragFloat(ASDX_U8("Attenuation"), &attenuation, 0.01f, 0.0f, 1.0f))
+                if (ImGui::DragFloat(ASDX_U8("Star Attenuation"), &attenuation, 0.01f, 0.0f, 1.0f))
                     m_StarEffect.SetAttenuation(attenuation);
+
+                if (ImGui::DragFloat(ASDX_U8("Star Exposure"), &exposure, 0.01f, 0.0f, 1000.0f))
+                    m_StarEffect.SetExposure(exposure);
             }
 
             if (ImGui::Button(ASDX_U8("リセット")))
             {
                 m_BloomEffect.SetThreshold(0.0f);
                 m_BloomEffect.SetBlurStrength(5.0f);
+                m_BloomEffect.SetExposure(1.0f);
 
                 m_StarEffect.SetThreshold(0.65f);
                 m_StarEffect.SetType(asdx::StarEffect::TYPE::CROSS_SCREEN_SPECTRAL);
                 m_StarEffect.SetAttenuation(0.85f);
+                m_StarEffect.SetExposure(1.0f);
             }
 
             ImGui::End();

@@ -326,11 +326,18 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
             auto threshold = m_BloomEffect.GetThreshold();
+            auto exposure  = m_BloomEffect.GetExposure();
             if (ImGui::DragFloat(ASDX_U8("Threshold"), &threshold, 0.01f, 0.0f, 100.0f))
                 m_BloomEffect.SetThreshold(threshold);
 
+            if (ImGui::DragFloat(ASDX_U8("Exposure"), &exposure, 0.01f, 0.0f, 1000.0f))
+                m_BloomEffect.SetExposure(exposure);
+
             if (ImGui::Button(ASDX_U8("リセット")))
+            {
                 m_BloomEffect.SetThreshold(0.0f);
+                m_BloomEffect.SetExposure(1.0f);
+            }
 
             ImGui::End();
         }

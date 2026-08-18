@@ -329,6 +329,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         {
             auto threshold = m_BloomEffect.GetThreshold();
             auto strength  = m_BloomEffect.GetBlurStrength();
+            auto exposure  = m_BloomEffect.GetExposure();
 
             if (ImGui::DragFloat(ASDX_U8("Theshold"), &threshold, 0.01f, 0.0f, 100.0f))
                 m_BloomEffect.SetThreshold(threshold);
@@ -336,10 +337,14 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             if (ImGui::DragFloat(ASDX_U8("Strength"), &strength, 0.001f, 0.01f, 10.0f))
                 m_BloomEffect.SetBlurStrength(strength);
 
+            if (ImGui::DragFloat(ASDX_U8("Exposure"), &exposure, 0.01f, 0.0f, 1000.0f))
+                m_BloomEffect.SetExposure(exposure);
+
             if (ImGui::Button(ASDX_U8("リセット")))
             {
                 m_BloomEffect.SetThreshold(0.0f);
                 m_BloomEffect.SetBlurStrength(3.0f);
+                m_BloomEffect.SetExposure(1.0f);
             }
 
             ImGui::End();

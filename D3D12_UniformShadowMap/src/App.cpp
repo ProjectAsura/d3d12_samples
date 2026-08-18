@@ -993,8 +993,12 @@ void SampleApp::OnFrameRender(const asdx::App::FrameEventArgs& args)
         m_LineRenderer.Draw(pCmd);
 
         // スプライト描画.
-        m_SpriteRenderer.SetPipelineState(m_SpriteRenderer.GetDefaultState());
-        m_SpriteRenderer.Draw(pCmd);
+        if (m_ShowShadowMap)
+        {
+            pCmd->SetGraphicsRootSignature(m_SpriteRenderer.GetRootSignature());
+            m_SpriteRenderer.SetPipelineState(m_SpriteRenderer.GetDefaultState());
+            m_SpriteRenderer.Draw(pCmd);
+        }
 
         auto addressGPU = m_ShapeParams.Update();
         m_ShapeState.ApplyTranslucentState(pCmd);

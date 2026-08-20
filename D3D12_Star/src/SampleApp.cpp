@@ -142,17 +142,27 @@ bool LoadOgg(const char* path, asdx::SoundResource& resource, bool loop = false)
 #endif
 
 static const char* kStarTypes[] = {
-    "DISABLE",
-    "CAMERA",
-    "CEAP_CAMERA",
-    "CROSS_SCREEN",
-    "CROSS_SCREEN_SPECTRAL",
-    "SNOW_CROSS",
-    "SNOW_CROSS_SPECTRAL",
-    "SUNNY_CROSS",
-    "SUNNY_CROSS_SPECTRAL",
-    "CINEMA_VERTICAL",
-    "CINEMA_HORIZONTAL",
+    "None",
+    "Cross",
+    "Cross <Spectral>",
+    "Snow Cross",
+    "Snow Cross <Spectral>",
+    "Sunny Cross",
+    "Sunny Cross <Spectral>",
+    "Twinkle Star",
+    "Twinkle Star <Spectral>",
+    "Twinkle Star 6x",
+    "Twinkle Star 6x <Spectral>",
+    "Twinkle Star 8x",
+    "Twinkle Star 8x <Spectral>",
+    "Natural Cross",
+    "Natural Cross <Spectral>",
+    "AnamorFlare Red",
+    "AnamorFlare Yellow",
+    "AnamorFlare Green",
+    "AnamorFlare Blue",
+    "AnamorFlare Clear",
+    "AnamorFlare Rainbow",
 };
 
 } // namespace
@@ -269,6 +279,7 @@ bool SampleApp::OnInit()
     }
     m_BloomEffect.SetThreshold(0.0f);
     m_BloomEffect.SetBlurStrength(5.0f);
+    m_BloomEffect.SetExposure(2.0f);
 
     // クロスフィルタ初期化.
     if (!m_StarEffect.Init(m_Width, m_Height, DXGI_FORMAT_R11G11B10_FLOAT))
@@ -276,9 +287,9 @@ bool SampleApp::OnInit()
         ELOGA("Error : StarEffect::Init() Failed.");
         return false;
     }
-    m_StarEffect.SetType(asdx::StarEffect::CROSS_SCREEN_SPECTRAL);
+    m_StarEffect.SetType(asdx::StarEffect::CROSS_SPECTRAL);
     m_StarEffect.SetThreshold(0.65f);
-    m_StarEffect.SetAttenuation(0.85f);
+    m_StarEffect.SetExposure(1.0f);
 
     // コマンドの記録を終了.
     pCmd->Close();
@@ -352,7 +363,7 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
         // ImGuiフレーム開始処理.
         asdx::GuiMgr::Instance().Update(m_Width, m_Height);
 
-        ImGui::SetNextWindowSize(ImVec2(360, 220), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(360, 230), ImGuiCond_Once);
         if (ImGui::Begin(ASDX_U8("制御パラメータ")))
         {
             // ブルーム設定.
@@ -375,17 +386,17 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
             {
                 auto threshold   = m_StarEffect.GetThreshold();
                 int  type        = int(m_StarEffect.GetType());
-                auto attenuation = m_StarEffect.GetAttenuation();
                 auto exposure    = m_StarEffect.GetExposure();
+                auto angle       = asdx::ToDegree(m_StarEffect.GetAngle());
 
                 if (ImGui::Combo(ASDX_U8("Star Type"), &type, kStarTypes, _countof(kStarTypes)))
-                    m_StarEffect.SetType(asdx::StarEffect::TYPE(type));
+                    m_StarEffect.SetType(asdx::StarEffect::FILTER_TYPE(type));
 
                 if (ImGui::DragFloat(ASDX_U8("Star Threshold"), &threshold, 0.01f, 0.0f, 100.0f))
                     m_StarEffect.SetThreshold(threshold);
 
-                if (ImGui::DragFloat(ASDX_U8("Star Attenuation"), &attenuation, 0.01f, 0.0f, 1.0f))
-                    m_StarEffect.SetAttenuation(attenuation);
+                if (ImGui::DragFloat(ASDX_U8("Star Angle"), &angle, 0.1f, 0.0f, 360.0f))
+                    m_StarEffect.SetAngle(asdx::ToRadian(angle));
 
                 if (ImGui::DragFloat(ASDX_U8("Star Exposure"), &exposure, 0.01f, 0.0f, 1000.0f))
                     m_StarEffect.SetExposure(exposure);
@@ -398,9 +409,9 @@ void SampleApp::OnFrameMove(const asdx::App::FrameEventArgs& args)
                 m_BloomEffect.SetExposure(1.0f);
 
                 m_StarEffect.SetThreshold(0.65f);
-                m_StarEffect.SetType(asdx::StarEffect::TYPE::CROSS_SCREEN_SPECTRAL);
-                m_StarEffect.SetAttenuation(0.85f);
+                m_StarEffect.SetType(asdx::StarEffect::FILTER_TYPE::CROSS_SPECTRAL);
                 m_StarEffect.SetExposure(1.0f);
+                m_StarEffect.SetAngle(0.0f);
             }
 
             ImGui::End();

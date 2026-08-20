@@ -16,7 +16,7 @@
 #include <fw/asdxAppCamera.h>
 #include <gfx/asdxCommandQueue.h>
 #include <gfx/asdxTextureManager.h>
-#include <gfx/asdxKawaseBloomEffect.h>
+#include <gfx/asdxBloomEffect.h>
 #include <gfx/asdxStarEffect.h>
 #include <gfx/asdxSprite.h>
 #include <gfx/asdxSampler.h>
@@ -64,7 +64,7 @@ private:
     asdx::AppCamera             m_Camera;
     asdx::WaitPoint             m_FrameWaitPoint;
     asdx::TextureHolder         m_Texture;
-    asdx::KawaseBloomEffect     m_BloomEffect;
+    asdx::BloomEffect           m_BloomEffect;
     asdx::StarEffect            m_StarEffect;
     asdx::Sampler               m_LinearClamp;
     asdx::SpriteRenderer        m_SpriteRenderer;
